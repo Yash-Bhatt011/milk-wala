@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Milk Distributor - Dashboard</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+        integrity="sha512-pbF6xD30cxEwZIRckHEcaNV9ZdO+psC0vok+oR6R1yHc6/H7G6x3gB3RR/RSgV0P7/1G3v/xZ1B3F/7Nkf0Ctw==" 
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    /* Global Styles */
+    body {
+      background: #f0f8ff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+    }
+    /* Navbar & Icons */
+    .navbar-brand i { margin-right: 8px; }
+    /* Card Styles */
+    .card {
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #ffffff;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+    /* Fade-in Animation */
+    .fade-in { animation: fadeIn 0.8s ease-in-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .pointer { cursor: pointer; }
+    /* Table Hover */
+    .table-hover tbody tr:hover { background-color: #f1f7ff; }
+    /* Input with Icon */
+    .input-group .form-control { border-right: none; }
+    .input-group-text { background-color: #e9ecef; border-left: none; color: #007bff; }
+    /* Toast Position */
+    #toastContainer { position: fixed; top: 1rem; right: 1rem; z-index: 1055; }
+    /* Invoice Modal Custom */
+    .invoice-table th, .invoice-table td {
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+  <!-- Toast Container for notifications -->
+  <div id="toastContainer"></div>
+  
+  <!-- Navigation Bar with Tabs -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <i class="fa-solid fa-cow" aria-hidden="true"></i> Milk Distributor
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTabs" aria-controls="navbarTabs" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarTabs">
+        <ul class="nav nav-tabs ms-auto" id="myTab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="allCustomers-tab" data-bs-toggle="tab" data-bs-target="#allCustomers" type="button" role="tab" aria-controls="allCustomers" aria-selected="true">
+              <i class="fa-solid fa-list" aria-hidden="true"></i> All Customers
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="addCustomer-tab" data-bs-toggle="tab" data-bs-target="#addCustomer" type="button" role="tab" aria-controls="addCustomer" aria-selected="false">
+              <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Add Customer
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Tab Content -->
+  <div class="container my-4">
+    <div class="tab-content" id="myTabContent">
+      <!-- All Customers Tab Pane -->
+      <div class="tab-pane fade show active" id="allCustomers" role="tabpanel" aria-labelledby="allCustomers-tab">
+        <h1 class="text-center mb-4"><i class="fa-solid fa-users" aria-hidden="true"></i> All Customers</h1>
+        <!-- Search Filter -->
+        <div class="row mb-3">
+          <div class="col-12 col-md-6">
+            <div class="input-group">
+              <span class="input-group-text" id="searchIcon" aria-label="Search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span>
+              <input type="text" class="form-control search-input" placeholder="Search by name or ID" id="searchInput" aria-describedby="searchIcon" />
+            </div>
+          </div>
+        </div>
+        <!-- All Customers Table (Section 1) -->
+        <div class="card fade-in">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover" id="customersTable">
+                <thead class="table-light">
+                  <tr>
+                    <th>#</th>
+                    <th>Customer ID</th>
+                    <th>Name</th>
+                    <th>Phone No</th>
+                    <th>Address</th>
+                    <th>Quantity (This Month)</th>
+                  </tr>
+                </thead>
+                <tbody id="customersTableBody">
+                  <tr id="customerRow-1" class="pointer" onclick="showCustomerDetails(1)">
+                    <td>1</td>
+                    <td>1</td>
+                    <td>John Doe</td>
+                    <td>1234567890</td>
+                    <td>123 Milk St</td>
+                    <td>50L</td>
+                  </tr>
+                  <tr id="customerRow-2" class="pointer" onclick="showCustomerDetails(2)">
+                    <td>2</td>
+                    <td>2</td>
+                    <td>Jane Smith</td>
+                    <td>0987654321</td>
+                    <td>456 Dairy Ave</td>
+                    <td>30L</td>
+                  </tr>
+                  <tr id="customerRow-3" class="pointer" onclick="showCustomerDetails(3)">
+                    <td>3</td>
+                    <td>3</td>
+                    <td>Bob Johnson</td>
+                    <td>5551234567</td>
+                    <td>789 Cream Rd</td>
+                    <td>40L</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <nav>
+              <ul class="pagination justify-content-center">
+                <li class="page-item disabled"><a class="page-link" href="#">Previous</a></li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item"><a class="page-link" href="#">Next</a></li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Customer Details & Daily Data Section -->
+        <div id="customerDetailsSection" class="fade-in" style="display: none;">
+          <!-- Section 1: Customer Details -->
+          <div class="card">
+            <div class="card-header bg-info text-white">
+              <i class="fa-solid fa-address-card" aria-hidden="true"></i> Customer Details
+            </div>
+            <div class="card-body">
+              <p><strong>Name:</strong> <span id="detailName"></span></p>
+              <p><strong>Customer ID:</strong> <span id="detailID"></span></p>
+              <p><strong>Phone No:</strong> <span id="detailPhone"></span></p>
+              <p><strong>Address:</strong> <span id="detailAddress"></span></p>
+              <p><strong>Join Date:</strong> <span id="detailJoinDate"></span></p>
+            </div>
+          </div>
+
+          <!-- Section 2: Add Data Today -->
+          <div class="card">
+            <div class="card-header bg-success text-white">
+              <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i> Add Data Today
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <p id="selectedCustomer" class="fw-bold text-primary">No customer selected.</p>
+              </div>
+              <form id="addDataForm" onsubmit="saveTodayData(event)">
+                <div class="mb-3">
+                  <label for="todayDate" class="form-label">Date</label>
+                  <input type="date" class="form-control" id="todayDate" required />
+                </div>
+                <div class="mb-3">
+                  <label for="todayQuantity" class="form-label">Quantity (in liters)</label>
+                  <input type="number" class="form-control" id="todayQuantity" placeholder="Enter quantity" required />
+                </div>
+                <div class="mb-3">
+                  <label for="todayPrice" class="form-label">Price (in ₹)</label>
+                  <input type="number" readonly class="form-control" id="todayPrice" value="70" required />
+                </div>
+                <button type="submit" class="btn btn-primary w-100">
+                  <i class="fa-solid fa-save" aria-hidden="true"></i> Save
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <!-- Section 3: Daily Data Entries -->
+          <div class="card">
+            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+              <span><i class="fa-solid fa-table" aria-hidden="true"></i> Customer Data Table</span>
+              <select id="monthSelector" class="form-select form-select-sm w-auto" onchange="filterMonthData()">
+                <option value="current">This Month</option>
+                <option value="6months">Previous 6 Months</option>
+              </select>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable">
+                  <thead class="table-light">
+                    <tr>
+                      <th>#</th>
+                      <th>Date</th>
+                      <th>Day</th>
+                      <th>Customer ID</th>
+                      <th>Customer Name</th>
+                      <th>Quantity</th>
+                      <th>Price (in ₹)</th>
+                      <th>Edit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- Daily data entries will be appended here -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Summary Table -->
+          <div class="card">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+              <span><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Summary</span>
+              <button class="btn btn-sm btn-light" onclick="generateInvoice()">
+                <i class="fa-solid fa-file-invoice" aria-hidden="true"></i> Generate Invoice
+              </button>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-bordered" id="summaryTable">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Customer ID</th>
+                      <th>Customer Name</th>
+                      <th>Total Days</th>
+                      <th>Total Quantity</th>
+                      <th>AVG Price (in ₹)</th>
+                      <th>Total Payment (in ₹)</th>
+                      <th>Due Payment (in ₹)</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="summaryTableBody">
+                    <!-- Summary rows will be generated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Customer Tab Pane -->
+      <div class="tab-pane fade" id="addCustomer" role="tabpanel" aria-labelledby="addCustomer-tab">
+        <h1 class="text-center mb-4"><i class="fa-solid fa-user-plus" aria-hidden="true"></i> Add Customer</h1>
+        <div class="card fade-in">
+          <div class="card-body">
+            <form id="addCustomerForm" onsubmit="addCustomer(event)">
+              <div class="mb-3">
+                <label for="customerName" class="form-label">Name</label>
+                <input type="text" class="form-control" id="customerName" placeholder="Enter customer name" required />
+              </div>
+              <div class="mb-3">
+                <label for="customerPhone" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="customerPhone" placeholder="Enter phone number" required />
+              </div>
+              <div class="mb-3">
+                <label for="customerAddress" class="form-label">Address</label>
+                <textarea class="form-control" id="customerAddress" rows="3" placeholder="Enter address" required></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="joinDate" class="form-label">Join Date</label>
+                <input type="date" class="form-control" id="joinDate" required />
+              </div>
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Add Customer
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Modal -->
+  <div class="modal fade" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header bg-secondary text-white">
+          <h5 class="modal-title" id="invoiceModalLabel">
+            <i class="fa-solid fa-file-invoice" aria-hidden="true"></i> Invoice Summary
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="invoiceContent">
+            <!-- Invoice details will be generated dynamically here -->
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i> Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Modal for Daily Data -->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-white">
+          <h5><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Edit Data</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editDataForm" onsubmit="saveEditData(event)">
+            <div class="mb-3">
+              <label for="editQuantity" class="form-label">Quantity</label>
+              <input type="number" class="form-control" id="editQuantity" required />
+            </div>
+            <div class="mb-3">
+              <label for="editPrice" class="form-label">Price (in ₹)</label>
+              <input type="number" class="form-control" id="editPrice" required />
+            </div>
+            <div class="d-flex justify-content-end">
+              <button type="submit" class="btn btn-primary me-2">
+                <i class="fa-solid fa-save" aria-hidden="true"></i> Save
+              </button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i> Close
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle JS (includes Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Custom JavaScript -->
+  <script>
+    /***********************
+     * Global Variables
+     ***********************/
+    let currentEditingRow = null;
+    let currentCustomerId = null; // Set when a customer row is clicked.
+    let summaryData = {};
+
+    /***********************
+     * Helper Functions
+     ***********************/
+    function getDayName(dateStr) {
+      const dateObj = new Date(dateStr);
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      return days[dateObj.getDay()];
+    }
+
+    /***********************
+     * Sample Data
+     ***********************/
+    const customers = {
+      1: { name: "John Doe", id: 1, phone: "1234567890", address: "123 Milk St", joinDate: "2023-01-15", monthQuantity: 50 },
+      2: { name: "Jane Smith", id: 2, phone: "0987654321", address: "456 Dairy Ave", joinDate: "2022-11-10", monthQuantity: 30 },
+      3: { name: "Bob Johnson", id: 3, phone: "5551234567", address: "789 Cream Rd", joinDate: "2024-02-20", monthQuantity: 40 }
+    };
+
+    /***********************
+     * UI & Event Functions
+     ***********************/
+    function showCustomerDetails(customerId) {
+      currentCustomerId = customerId;
+      const customer = customers[customerId];
+      if (customer) {
+        document.getElementById("detailName").innerText = customer.name;
+        document.getElementById("detailID").innerText = customer.id;
+        document.getElementById("detailPhone").innerText = customer.phone;
+        document.getElementById("detailAddress").innerText = customer.address;
+        document.getElementById("detailJoinDate").innerText = customer.joinDate;
+        const today = new Date().toISOString().split("T")[0];
+        document.getElementById("todayDate").value = today;
+        document.getElementById("selectedCustomer").innerText = "Selected Customer: " + customer.name + " (ID: " + customer.id + ")";
+        document.getElementById("customerDetailsSection").style.display = "block";
+        window.scrollTo({ top: document.getElementById("customerDetailsSection").offsetTop, behavior: "smooth" });
+      }
+    }
+
+    // Update price automatically based on quantity (rate: ₹70 per liter)
+    document.getElementById("todayQuantity").addEventListener("input", function() {
+      let qty = parseFloat(this.value);
+      document.getElementById("todayPrice").value = (!isNaN(qty)) ? qty * 70 : 70;
+    });
+
+    function saveTodayData(event) {
+      event.preventDefault();
+      if (!currentCustomerId) {
+        showToast("Please select a customer first.", "danger");
+        return;
+      }
+      const date = document.getElementById("todayDate").value;
+      const quantity = document.getElementById("todayQuantity").value;
+      const price = document.getElementById("todayPrice").value;
+      const dayName = getDayName(date);
+      const qtyNumber = parseFloat(quantity);
+      const dataTableBody = document.querySelector("#dataTable tbody");
+      const newIndex = dataTableBody.children.length + 1;
+      const customer = customers[currentCustomerId];
+      
+      // Create new row in Daily Data Table
+      const newRow = document.createElement("tr");
+      newRow.innerHTML = `<td>${newIndex}</td>
+                          <td>${date}</td>
+                          <td>${dayName}</td>
+                          <td>${currentCustomerId}</td>
+                          <td>${customer.name}</td>
+                          <td>${quantity}L</td>
+                          <td>₹${price}</td>
+                          <td>
+                            <button class="btn btn-sm btn-warning" onclick="openEditModal(event, this)">
+                              <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                            </button>
+                          </td>`;
+      dataTableBody.appendChild(newRow);
+      
+      // Update customer's monthly quantity
+      if (!customer.monthQuantity) { customer.monthQuantity = 0; }
+      customer.monthQuantity += qtyNumber;
+      let customerRow = document.getElementById("customerRow-" + currentCustomerId);
+      if (customerRow) { customerRow.cells[5].innerText = customer.monthQuantity + "L"; }
+      
+      recalcSummaryData();
+      showToast("Data saved successfully!", "success");
+      document.getElementById("addDataForm").reset();
+      document.getElementById("todayPrice").value = 70;
+    }
+
+    function recalcSummaryData() {
+      summaryData = {};
+      const rows = document.querySelectorAll("#dataTable tbody tr");
+      rows.forEach(row => {
+        const custId = row.cells[3].innerText;
+        const quantityText = row.cells[5].innerText;
+        const priceText = row.cells[6].innerText;
+        const quantity = parseFloat(quantityText.replace("L", "")) || 0;
+        const price = parseFloat(priceText.replace("₹", "")) || 0;
+        if (!summaryData[custId]) {
+          summaryData[custId] = { totalDays: 0, totalQuantity: 0, totalPayment: 0, status: "Pending" };
+        }
+        summaryData[custId].totalDays += 1;
+        summaryData[custId].totalQuantity += quantity;
+        summaryData[custId].totalPayment += quantity * price;
+      });
+      updateSummaryTable();
+      updateMainCustomersTable();
+    }
+
+    function updateSummaryTable() {
+      const tbody = document.getElementById("summaryTableBody");
+      tbody.innerHTML = "";
+      for (const custId in summaryData) {
+        const data = summaryData[custId];
+        const customer = customers[custId];
+        const avgPrice = data.totalQuantity > 0 ? (data.totalPayment / data.totalQuantity).toFixed(2) : "0";
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${custId}</td>
+                         <td>${customer.name}</td>
+                         <td>${data.totalDays}</td>
+                         <td>${data.totalQuantity}L</td>
+                         <td>₹${avgPrice}</td>
+                         <td>₹${data.totalPayment}</td>
+                         <td>₹${data.totalPayment}</td>
+                         <td>${data.totalPayment > 0 ? data.status : "Success"}</td>`;
+        tbody.appendChild(row);
+      }
+    }
+
+    function updateMainCustomersTable() {
+      const rows = document.querySelectorAll("#customersTable tbody tr");
+      rows.forEach(row => {
+        const custId = row.cells[1].innerText;
+        if (summaryData[custId]) {
+          row.cells[5].innerText = summaryData[custId].totalQuantity + "L";
+        } else {
+          row.cells[5].innerText = "0L";
+        }
+      });
+    }
+
+    // Search filter for Customers Table
+    document.getElementById("searchInput").addEventListener("keyup", function() {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll("#customersTable tbody tr");
+      rows.forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
+      });
+    });
+
+    function openEditModal(event, btn) {
+      event.stopPropagation();
+      currentEditingRow = btn.closest("tr");
+      const quantityCell = currentEditingRow.cells[5].innerText;
+      const priceCell = currentEditingRow.cells[6].innerText;
+      const quantity = parseFloat(quantityCell.replace("L", "")) || 0;
+      const price = parseFloat(priceCell.replace("₹", "")) || 0;
+      document.getElementById("editQuantity").value = quantity;
+      document.getElementById("editPrice").value = price;
+      const myModal = new bootstrap.Modal(document.getElementById("editModal"));
+      myModal.show();
+    }
+
+    function saveEditData(event) {
+      event.preventDefault();
+      const newQuantity = document.getElementById("editQuantity").value;
+      const newPrice = document.getElementById("editPrice").value;
+      if (currentEditingRow) {
+        currentEditingRow.cells[5].innerText = newQuantity + "L";
+        currentEditingRow.cells[6].innerText = "₹" + newPrice;
+      }
+      recalcSummaryData();
+      const modalEl = document.getElementById("editModal");
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      modal.hide();
+      showToast("Data updated successfully!", "success");
+    }
+
+    // Dummy filter functions.
+    function filterMonthData() {
+      const value = document.getElementById("monthSelector").value;
+      alert("Filtering data for: " + (value === "current" ? "This Month" : "Previous 6 Months"));
+    }
+    function filterSummaryData() {
+      const value = document.getElementById("summaryMonthSelector").value;
+      alert("Filtering summary for: " + (value === "current" ? "This Month" : "Previous 6 Months"));
+    }
+
+    /***********************
+     * Invoice Generation & Payment Integration
+     ***********************/
+    function generateInvoice() {
+      // Build invoice content based on summaryData for customers with "Pending" status.
+      let content = `<h5 class="mb-3">Invoice Summary</h5>
+                     <div class="table-responsive">
+                     <table class="table table-bordered invoice-table">
+                       <thead class="table-light">
+                         <tr>
+                           <th>Customer ID</th>
+                           <th>Customer Name</th>
+                           <th>Total Payment (in ₹)</th>
+                           <th>Status</th>
+                           <th>Actions</th>
+                         </tr>
+                       </thead>
+                       <tbody>`;
+      let hasPending = false;
+      for (const custId in summaryData) {
+        const data = summaryData[custId];
+        const customer = customers[custId];
+        if (data.totalPayment > 0 && data.status === "Pending") {
+          hasPending = true;
+          content += `<tr>
+                        <td>${custId}</td>
+                        <td>${customer.name}</td>
+                        <td>₹${data.totalPayment}</td>
+                        <td>${data.status}</td>
+                        <td>
+                          <button class="btn btn-sm btn-success me-2" onclick="payInvoice(${custId})">
+                            <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Pay Now
+                          </button>
+                          <button class="btn btn-sm btn-warning" onclick="sendReminder(${custId})">
+                            <i class="fa-solid fa-bell" aria-hidden="true"></i> Send Reminder
+                          </button>
+                        </td>
+                      </tr>`;
+        }
+      }
+      content += `</tbody></table></div>`;
+      if (!hasPending) {
+        content = `<p class="text-center">All invoices are paid!</p>`;
+      }
+      document.getElementById("invoiceContent").innerHTML = content;
+      const invoiceModal = new bootstrap.Modal(document.getElementById("invoiceModal"));
+      invoiceModal.show();
+    }
+
+    function payInvoice(custId) {
+      // Simulate payment processing. In a real app, redirect to a payment gateway.
+      showToast("Redirecting to payment gateway for Customer ID " + custId + " ...", "info");
+      setTimeout(() => {
+        // Simulate payment success: update the summary status for that customer.
+        if (summaryData[custId]) {
+          summaryData[custId].status = "Success";
+          updateSummaryTable();
+          showToast("Payment successful for Customer ID " + custId + "!", "success");
+        }
+      }, 1500);
+    }
+
+    function sendReminder(custId) {
+      // Simulate sending a reminder (e.g., via SMS or email).
+      const customer = customers[custId];
+      showToast("Payment reminder sent to " + customer.name + "!", "warning");
+    }
+
+    /***********************
+     * Add Customer Functionality
+     ***********************/
+    function addCustomer(event) {
+      event.preventDefault();
+      const name = document.getElementById("customerName").value;
+      const phone = document.getElementById("customerPhone").value;
+      const address = document.getElementById("customerAddress").value;
+      const joinDate = document.getElementById("joinDate").value;
+      const newId = Object.keys(customers).length + 1;
+      customers[newId] = { name, id: newId, phone, address, joinDate, monthQuantity: 0 };
+      const tableBody = document.querySelector("#customersTable tbody");
+      const newRow = document.createElement("tr");
+      newRow.id = "customerRow-" + newId;
+      newRow.classList.add("pointer");
+      newRow.setAttribute("onclick", "showCustomerDetails(" + newId + ")");
+      newRow.innerHTML = `<td>${newId}</td>
+                          <td>${newId}</td>
+                          <td>${name}</td>
+                          <td>${phone}</td>
+                          <td>${address}</td>
+                          <td>0L</td>`;
+      tableBody.appendChild(newRow);
+      showToast("Customer added successfully!", "success");
+      document.getElementById("addCustomerForm").reset();
+    }
+
+    /***********************
+     * Toast Notifications
+     ***********************/
+    function showToast(message, type) {
+      // Types: "success", "danger", "info", "warning"
+      const toastContainer = document.getElementById("toastContainer");
+      const toastEl = document.createElement("div");
+      toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+      toastEl.setAttribute("role", "alert");
+      toastEl.setAttribute("aria-live", "assertive");
+      toastEl.setAttribute("aria-atomic", "true");
+      toastEl.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>`;
+      toastContainer.appendChild(toastEl);
+      const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+      toast.show();
+      toastEl.addEventListener('hidden.bs.toast', () => { toastEl.remove(); });
+    }
+  </script>
+</body>
+</html>

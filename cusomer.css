@@ -1,0 +1,29 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Arial', sans-serif;
+}
+
+h1 {
+    color: #343a40;
+    animation: fadeIn 2s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f1f1;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.pagination .page-link {
+    color: #007bff;
+}
