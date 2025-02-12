@@ -18,9 +18,7 @@
       color: #333;
     }
     /* Navbar & Icons */
-    .navbar-brand i {
-      margin-right: 8px;
-    }
+    .navbar-brand i { margin-right: 8px; }
     /* Card Styles */
     .card {
       margin-bottom: 20px;
@@ -32,48 +30,63 @@
     }
     .card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
     }
     /* Fade-in Animation */
-    .fade-in {
-      animation: fadeIn 0.8s ease-in-out;
-    }
+    .fade-in { animation: fadeIn 0.8s ease-in-out; }
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-    .pointer {
-      cursor: pointer;
-    }
+    .pointer { cursor: pointer; }
     /* Table Hover */
-    .table-hover tbody tr:hover {
-      background-color: #f1f7ff;
-    }
+    .table-hover tbody tr:hover { background-color: #f1f7ff; }
     /* Input with Icon */
-    .input-group .form-control {
-      border-right: none;
-    }
-    .input-group-text {
-      background-color: #e9ecef;
-      border-left: none;
-      color: #007bff;
-    }
+    .input-group .form-control { border-right: none; }
+    .input-group-text { background-color: #e9ecef; border-left: none; color: #007bff; }
     /* Toast Position */
-    #toastContainer {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      z-index: 1055;
-    }
+    #toastContainer { position: fixed; top: 1rem; right: 1rem; z-index: 1055; }
     /* Invoice Modal Custom */
-    .invoice-table th, .invoice-table td {
-      vertical-align: middle;
+    .invoice-table th, .invoice-table td { vertical-align: middle; }
+    
+    /* Responsive Table Styles for Mobile Devices */
+    @media screen and (max-width: 768px) {
+      table.responsive-table, 
+      table.responsive-table thead, 
+      table.responsive-table tbody, 
+      table.responsive-table th, 
+      table.responsive-table td, 
+      table.responsive-table tr {
+        display: block;
+      }
+      table.responsive-table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      table.responsive-table tr {
+        border: 1px solid #ccc;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+      }
+      table.responsive-table td {
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 50%;
+        text-align: right;
+      }
+      table.responsive-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        top: 0;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: bold;
+        text-align: left;
+      }
     }
   </style>
 </head>
@@ -81,39 +94,32 @@
   <!-- Toast Container for notifications -->
   <div id="toastContainer"></div>
   
-  <!-- Navigation Bar with Tabs -->
+  <!-- Navigation Bar with Toggle Button -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
         <i class="fa-solid fa-cow" aria-hidden="true"></i> Milk Distributor
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTabs" 
-              aria-controls="navbarTabs" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarTabs">
-        <ul class="nav nav-tabs ms-auto" id="myTab" role="tablist">
-          <!-- All Customers Tab -->
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="allCustomers-tab" data-bs-toggle="tab" data-bs-target="#allCustomers" 
-                    type="button" role="tab" aria-controls="allCustomers" aria-selected="true">
-              <i class="fa-solid fa-list" aria-hidden="true"></i> All Customers
-            </button>
-          </li>
-          <!-- Registration Tab -->
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" id="addCustomer-tab" data-bs-toggle="tab" data-bs-target="#addCustomer" 
-                    type="button" role="tab" aria-controls="addCustomer" aria-selected="false">
-              <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Registration
-            </button>
-          </li>
-        </ul>
+      <!-- Toggle Button placed on the right side -->
+      <div class="ms-auto">
+        <button id="toggleViewBtn" class="btn btn-light" onclick="toggleView()">Register</button>
       </div>
     </div>
   </nav>
   
-  <!-- Main Tab Content -->
+  <!-- Main Content Container using Bootstrap Tabs -->
   <div class="container my-4">
+    <!-- Hidden Tabs to Control the Views -->
+    <ul class="nav nav-tabs d-none" id="mainTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="allCustomers-tab" data-bs-toggle="tab" data-bs-target="#allCustomers" 
+                type="button" role="tab" aria-controls="allCustomers" aria-selected="true">All Customers</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="addCustomer-tab" data-bs-toggle="tab" data-bs-target="#addCustomer" 
+                type="button" role="tab" aria-controls="addCustomer" aria-selected="false">Registration</button>
+      </li>
+    </ul>
     <div class="tab-content" id="myTabContent">
       <!-- All Customers Tab Pane -->
       <div class="tab-pane fade show active" id="allCustomers" role="tabpanel" aria-labelledby="allCustomers-tab">
@@ -131,22 +137,22 @@
           </div>
         </div>
         <!-- All Customers Table -->
-        <div class="card fade-in">
+        <div class="card fade-in mb-4">
           <div class="card-body">
             <div class="table-responsive">
-              <table class="table table-hover" id="customersTable">
+              <table class="table table-hover responsive-table" id="customersTable">
                 <thead class="table-light">
                   <tr>
-                    <th>#</th>
-                    <th>Customer ID</th>
-                    <th>Name</th>
-                    <th>Phone No</th>
-                    <th>Address</th>
-                    <th>Quantity (This Month)</th>
+                    <th data-label="#">#</th>
+                    <th data-label="Customer ID">Customer ID</th>
+                    <th data-label="Name">Name</th>
+                    <th data-label="Phone No">Phone No</th>
+                    <th data-label="Address">Address</th>
+                    <th data-label="Quantity (This Month)">Quantity (This Month)</th>
                   </tr>
                 </thead>
                 <tbody id="customersTableBody">
-                  <!-- Customers will be rendered here -->
+                  <!-- Customers will be rendered here by JavaScript -->
                 </tbody>
               </table>
             </div>
@@ -165,7 +171,7 @@
         <!-- Customer Details & Daily Data Section -->
         <div id="customerDetailsSection" class="fade-in" style="display: none;">
           <!-- Customer Details -->
-          <div class="card">
+          <div class="card mb-4">
             <div class="card-header bg-info text-white">
               <i class="fa-solid fa-address-card" aria-hidden="true"></i> Customer Details
             </div>
@@ -178,7 +184,7 @@
           </div>
           
           <!-- Add Data Today Section -->
-          <div class="card">
+          <div class="card mb-4">
             <div class="card-header bg-success text-white">
               <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i> Add Data Today
             </div>
@@ -214,11 +220,10 @@
             </div>
           </div>
           
-          <!-- Daily Data Entries Section with Filtering -->
-          <div class="card">
+          <!-- Daily Data Entries Section -->
+          <div class="card mb-4">
             <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
               <span><i class="fa-solid fa-table" aria-hidden="true"></i> Customer Data Table</span>
-              <!-- Dropdown to filter by available data range -->
               <select id="monthSelector" class="form-select form-select-sm w-auto" onchange="filterMonthData()">
                 <option value="all" selected>All</option>
                 <option value="current">This Month</option>
@@ -227,53 +232,53 @@
             </div>
             <div class="card-body">
               <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable">
+                <table class="table table-bordered responsive-table" id="dataTable">
                   <thead class="table-light">
                     <tr>
-                      <th>#</th>
-                      <th>Date</th>
-                      <th>Day</th>
-                      <th>Customer ID</th>
-                      <th>Customer Name</th>
-                      <th>Milk Type</th>
-                      <th>Quantity</th>
-                      <th>Price (in ₹)</th>
-                      <th>Edit</th>
+                      <th data-label="#">#</th>
+                      <th data-label="Date">Date</th>
+                      <th data-label="Day">Day</th>
+                      <th data-label="Customer ID">Customer ID</th>
+                      <th data-label="Customer Name">Customer Name</th>
+                      <th data-label="Milk Type">Milk Type</th>
+                      <th data-label="Quantity">Quantity</th>
+                      <th data-label="Price (in ₹)">Price (in ₹)</th>
+                      <th data-label="Edit">Edit</th>
                     </tr>
                   </thead>
                   <tbody id="dataTableBody">
-                    <!-- Daily data entries will be rendered here -->
+                    <!-- Daily data entries will be rendered here by JavaScript -->
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
           
-          <!-- Summary Section -->
-          <div class="card">
+          <!-- Summary Section (Now shows summary for single selected customer if one is selected) -->
+          <div class="card mb-4">
             <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-              <span><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Summary</span>
+              <span id="summaryHeading"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Summary</span>
               <button class="btn btn-sm btn-light" onclick="generateInvoice()">
                 <i class="fa-solid fa-file-invoice" aria-hidden="true"></i> Generate Invoice
               </button>
             </div>
             <div class="card-body">
               <div class="table-responsive">
-                <table class="table table-bordered" id="summaryTable">
+                <table class="table table-bordered responsive-table" id="summaryTable">
                   <thead class="table-light">
                     <tr>
-                      <th>Customer ID</th>
-                      <th>Customer Name</th>
-                      <th>Total Days</th>
-                      <th>Total Quantity</th>
-                      <th>AVG Price (in ₹)</th>
-                      <th>Total Payment (in ₹)</th>
-                      <th>Due Payment (in ₹)</th>
-                      <th>Status</th>
+                      <th data-label="Customer ID">Customer ID</th>
+                      <th data-label="Customer Name">Customer Name</th>
+                      <th data-label="Total Days">Total Days</th>
+                      <th data-label="Total Quantity">Total Quantity</th>
+                      <th data-label="AVG Price (in ₹)">AVG Price (in ₹)</th>
+                      <th data-label="Total Payment (in ₹)">Total Payment (in ₹)</th>
+                      <th data-label="Due Payment (in ₹)">Due Payment (in ₹)</th>
+                      <th data-label="Status">Status</th>
                     </tr>
                   </thead>
                   <tbody id="summaryTableBody">
-                    <!-- Summary rows will be rendered here -->
+                    <!-- Summary rows will be rendered here by JavaScript -->
                   </tbody>
                 </table>
               </div>
@@ -284,7 +289,9 @@
       
       <!-- Registration Tab Pane -->
       <div class="tab-pane fade" id="addCustomer" role="tabpanel" aria-labelledby="addCustomer-tab">
-        <h1 class="text-center mb-4"><i class="fa-solid fa-user-plus" aria-hidden="true"></i> Registration</h1>
+        <h1 class="text-center mb-4">
+          <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Registration
+        </h1>
         <div class="card fade-in">
           <div class="card-body">
             <form id="addCustomerForm" onsubmit="registerCustomer(event)">
@@ -331,7 +338,7 @@
         </div>
         <div class="modal-body">
           <div id="invoiceContent">
-            <!-- Invoice details will be generated here -->
+            <!-- Invoice details will be generated here by JavaScript -->
           </div>
         </div>
         <div class="modal-footer">
@@ -429,12 +436,12 @@
         row.id = "customerRow-" + cust.id;
         row.className = "pointer";
         row.setAttribute("onclick", "showCustomerDetails(" + cust.id + ")");
-        row.innerHTML = `<td>${index++}</td>
-                         <td>${cust.id}</td>
-                         <td>${cust.name}</td>
-                         <td>${cust.phone}</td>
-                         <td>${cust.address}</td>
-                         <td>${cust.monthQuantity}L</td>`;
+        row.innerHTML = `<td data-label="#">${index++}</td>
+                         <td data-label="Customer ID">${cust.id}</td>
+                         <td data-label="Name">${cust.name}</td>
+                         <td data-label="Phone No">${cust.phone}</td>
+                         <td data-label="Address">${cust.address}</td>
+                         <td data-label="Quantity (This Month)">${cust.monthQuantity}L</td>`;
         tbody.appendChild(row);
       }
     }
@@ -445,15 +452,15 @@
       dailyData.forEach((entry, idx) => {
         const row = document.createElement("tr");
         const dayName = getDayName(entry.date);
-        row.innerHTML = `<td>${idx + 1}</td>
-                         <td>${entry.date}</td>
-                         <td>${dayName}</td>
-                         <td>${entry.customerId}</td>
-                         <td>${customers[entry.customerId].name}</td>
-                         <td>${entry.milkType === "buffalo" ? "Buffalo Milk" : "Cow Milk"}</td>
-                         <td>${entry.quantity}L</td>
-                         <td>₹${entry.price}</td>
-                         <td>
+        row.innerHTML = `<td data-label="#">${idx + 1}</td>
+                         <td data-label="Date">${entry.date}</td>
+                         <td data-label="Day">${dayName}</td>
+                         <td data-label="Customer ID">${entry.customerId}</td>
+                         <td data-label="Customer Name">${customers[entry.customerId].name}</td>
+                         <td data-label="Milk Type">${entry.milkType === "buffalo" ? "Buffalo Milk" : "Cow Milk"}</td>
+                         <td data-label="Quantity">${entry.quantity}L</td>
+                         <td data-label="Price (in ₹)">₹${entry.price}</td>
+                         <td data-label="Edit">
                            <button class="btn btn-sm btn-warning" onclick="openEditModalFromIndex(${idx}, event, this)">
                              <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                            </button>
@@ -462,24 +469,45 @@
       });
     }
     
+    // Modified renderSummaryTable: if a customer is selected, show summary only for that customer.
     function renderSummaryTable() {
-      const summary = computeSummary();
       const tbody = document.getElementById("summaryTableBody");
       tbody.innerHTML = "";
+      let summary = {};
+      
+      // If a customer is selected, compute summary for that customer only.
+      if (currentCustomerId) {
+        summary[currentCustomerId] = { totalDays: 0, totalQuantity: 0, totalPayment: 0 };
+        dailyData.forEach(entry => {
+          if (entry.customerId == currentCustomerId) {
+            summary[currentCustomerId].totalDays++;
+            summary[currentCustomerId].totalQuantity += parseFloat(entry.quantity);
+            summary[currentCustomerId].totalPayment += parseFloat(entry.price);
+          }
+        });
+        // Optionally, update the summary heading.
+        document.getElementById("summaryHeading").innerText = "Summary for " + customers[currentCustomerId].name;
+      } else {
+        // Otherwise, show summary for all customers.
+        summary = computeSummary();
+        document.getElementById("summaryHeading").innerText = "Summary";
+      }
+      
+      // Render the summary rows.
       for (let custId in summary) {
         const data = summary[custId];
         const cust = customers[custId];
         const avgPrice = data.totalQuantity > 0 ? (data.totalPayment / data.totalQuantity).toFixed(2) : "0";
         const status = cust.paymentStatus || "Pending";
         const row = document.createElement("tr");
-        row.innerHTML = `<td>${custId}</td>
-                         <td>${cust.name}</td>
-                         <td>${data.totalDays}</td>
-                         <td>${data.totalQuantity}L</td>
-                         <td>₹${avgPrice}</td>
-                         <td>₹${data.totalPayment}</td>
-                         <td>₹${data.totalPayment}</td>
-                         <td>${status}</td>`;
+        row.innerHTML = `<td data-label="Customer ID">${custId}</td>
+                         <td data-label="Customer Name">${cust.name}</td>
+                         <td data-label="Total Days">${data.totalDays}</td>
+                         <td data-label="Total Quantity">${data.totalQuantity}L</td>
+                         <td data-label="AVG Price (in ₹)">₹${avgPrice}</td>
+                         <td data-label="Total Payment (in ₹)">₹${data.totalPayment}</td>
+                         <td data-label="Due Payment (in ₹)">₹${data.totalPayment}</td>
+                         <td data-label="Status">${status}</td>`;
         tbody.appendChild(row);
       }
     }
@@ -535,8 +563,19 @@
         document.getElementById("todayDate").value = today;
         document.getElementById("selectedCustomer").innerText = "Selected Customer: " + cust.name + " (ID: " + cust.id + ")";
         document.getElementById("customerDetailsSection").style.display = "block";
+        // Hide the toggle button when a customer is selected.
+        document.getElementById("toggleViewBtn").style.display = "none";
+        // Update the summary table for the selected customer.
+        renderSummaryTable();
         window.scrollTo({ top: document.getElementById("customerDetailsSection").offsetTop, behavior: "smooth" });
       }
+    }
+    
+    // Ensure the toggle button is visible if no customer is selected.
+    if (!currentCustomerId) {
+      document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("toggleViewBtn").style.display = "block";
+      });
     }
     
     // Update price automatically based on quantity and selected milk type.
@@ -544,7 +583,6 @@
       const qty = parseFloat(document.getElementById("todayQuantity").value) || 0;
       const milkType = document.getElementById("milkType").value;
       const rate = milkRates[milkType];
-      // If no quantity, display default rate.
       document.getElementById("todayPrice").value = qty > 0 ? qty * rate : rate;
     }
     document.getElementById("todayQuantity").addEventListener("input", updatePrice);
@@ -574,7 +612,6 @@
       renderSummaryTable();
       showToast("Data saved successfully!", "success");
       document.getElementById("addDataForm").reset();
-      // Reset price to default for cow milk.
       document.getElementById("todayPrice").value = milkRates["cow"];
     }
     
@@ -598,11 +635,25 @@
         monthQuantity: 0,
         paymentStatus: "Pending"
       };
-      // Persist updated customers to localStorage.
       localStorage.setItem("customers", JSON.stringify(customers));
       renderCustomersTable();
       showToast("Customer registered successfully!", "success");
       document.getElementById("addCustomerForm").reset();
+    }
+    
+    // Toggle View: switch between All Customers and Registration sections using Bootstrap Tab API.
+    function toggleView() {
+      const allCustTabEl = document.getElementById("allCustomers-tab");
+      const regTabEl = document.getElementById("addCustomer-tab");
+      const toggleBtn = document.getElementById("toggleViewBtn");
+      if (allCustTabEl.classList.contains("active")) {
+        new bootstrap.Tab(regTabEl).show();
+        toggleBtn.innerText = "All Customers";
+      } else {
+        new bootstrap.Tab(allCustTabEl).show();
+        toggleBtn.innerText = "Register";
+      }
+      toggleBtn.style.display = "block";
     }
     
     // Toast notifications
@@ -622,173 +673,6 @@
       const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
       toast.show();
       toastEl.addEventListener("hidden.bs.toast", () => { toastEl.remove(); });
-    }
-    
-    /***********************
-     * Edit Daily Data Functions
-     ***********************/
-    function openEditModalFromIndex(index, event, btn) {
-      event.stopPropagation();
-      currentEditingRow = btn.closest("tr");
-      const entry = dailyData[index];
-      document.getElementById("editQuantity").value = entry.quantity;
-      document.getElementById("editPrice").value = entry.price;
-      currentEditingRow.dataset.editIndex = index;
-      const myModal = new bootstrap.Modal(document.getElementById("editModal"));
-      myModal.show();
-    }
-    
-    function saveEditData(event) {
-      event.preventDefault();
-      const newQuantity = document.getElementById("editQuantity").value;
-      const newPrice = document.getElementById("editPrice").value;
-      const editIndex = currentEditingRow.dataset.editIndex;
-      if (editIndex !== undefined) {
-        dailyData[editIndex].quantity = newQuantity;
-        dailyData[editIndex].price = newPrice;
-      }
-      renderDailyDataTable();
-      recalcSummaryAndUpdate();
-      showToast("Data updated successfully!", "success");
-      const modalEl = document.getElementById("editModal");
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      modal.hide();
-    }
-    
-    function recalcSummaryAndUpdate() {
-      updateCustomersMonthlyQuantity();
-      renderSummaryTable();
-    }
-    
-    /***********************
-     * Invoice & Payment Integration (Simulated)
-     ***********************/
-    function generateInvoice() {
-      let content = `<h5 class="mb-3">Invoice Summary</h5>
-                     <div class="table-responsive">
-                     <table class="table table-bordered invoice-table">
-                       <thead class="table-light">
-                         <tr>
-                           <th>Customer ID</th>
-                           <th>Customer Name</th>
-                           <th>Total Payment (in ₹)</th>
-                           <th>Status</th>
-                           <th>Actions</th>
-                         </tr>
-                       </thead>
-                       <tbody>`;
-      let hasPending = false;
-      const summary = computeSummary();
-      for (const custId in summary) {
-        const data = summary[custId];
-        const cust = customers[custId];
-        if (data.totalPayment > 0 && cust.paymentStatus === "Pending") {
-          hasPending = true;
-          content += `<tr>
-                        <td>${custId}</td>
-                        <td>${cust.name}</td>
-                        <td>₹${data.totalPayment}</td>
-                        <td>${cust.paymentStatus}</td>
-                        <td>
-                          <button class="btn btn-sm btn-success me-2" onclick="payInvoice(${custId})">
-                            <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Pay Now
-                          </button>
-                          <button class="btn btn-sm btn-warning" onclick="sendReminder(${custId})">
-                            <i class="fa-solid fa-bell" aria-hidden="true"></i> Send Reminder
-                          </button>
-                        </td>
-                      </tr>`;
-        }
-      }
-      content += `</tbody></table></div>`;
-      if (!hasPending) {
-        content = `<p class="text-center">All invoices are paid!</p>`;
-      }
-      document.getElementById("invoiceContent").innerHTML = content;
-      const invoiceModal = new bootstrap.Modal(document.getElementById("invoiceModal"));
-      invoiceModal.show();
-    }
-    
-    function payInvoice(custId) {
-      showToast("Redirecting to payment gateway for Customer ID " + custId + " ...", "info");
-      setTimeout(() => {
-        customers[custId].paymentStatus = "Success";
-        renderSummaryTable();
-        showToast("Payment successful for Customer ID " + custId + "!", "success");
-      }, 1500);
-    }
-    
-    function sendReminder(custId) {
-      const cust = customers[custId];
-      showToast("Payment reminder sent to " + cust.name + "!", "warning");
-    }
-    
-    /***********************
-     * Search Filter
-     ***********************/
-    document.getElementById("searchInput").addEventListener("keyup", function() {
-      const filter = this.value.toLowerCase();
-      const rows = document.querySelectorAll("#customersTable tbody tr");
-      rows.forEach(row => {
-        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
-      });
-    });
-    
-    /***********************
-     * Filter Daily Data by Date Range
-     ***********************/
-    function filterMonthData() {
-      const value = document.getElementById("monthSelector").value;
-      const today = new Date();
-      let filtered = dailyData.map((entry, index) => ({ ...entry, originalIndex: index }));
-      
-      if (value === "current") {
-        filtered = filtered.filter(entry => {
-          const d = new Date(entry.date);
-          return d.getMonth() === today.getMonth() && d.getFullYear() === today.getFullYear();
-        });
-      } else if (value === "6months") {
-        let sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-        filtered = filtered.filter(entry => {
-          const d = new Date(entry.date);
-          return d >= sixMonthsAgo && d <= today;
-        });
-      }
-      
-      // Render filtered data into the daily data table.
-      const tbody = document.getElementById("dataTableBody");
-      tbody.innerHTML = "";
-      filtered.forEach((entry, idx) => {
-        const row = document.createElement("tr");
-        const dayName = getDayName(entry.date);
-        row.innerHTML = `<td>${idx + 1}</td>
-                         <td>${entry.date}</td>
-                         <td>${dayName}</td>
-                         <td>${entry.customerId}</td>
-                         <td>${customers[entry.customerId].name}</td>
-                         <td>${entry.milkType === "buffalo" ? "Buffalo Milk" : "Cow Milk"}</td>
-                         <td>${entry.quantity}L</td>
-                         <td>₹${entry.price}</td>
-                         <td>
-                           <button class="btn btn-sm btn-warning" onclick="openEditModalFromFiltered(${entry.originalIndex}, event, this)">
-                             <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
-                           </button>
-                         </td>`;
-        tbody.appendChild(row);
-      });
-    }
-    
-    // Use this function when editing from the filtered list so that the original index is used.
-    function openEditModalFromFiltered(originalIndex, event, btn) {
-      event.stopPropagation();
-      currentEditingRow = btn.closest("tr");
-      const entry = dailyData[originalIndex];
-      document.getElementById("editQuantity").value = entry.quantity;
-      document.getElementById("editPrice").value = entry.price;
-      currentEditingRow.dataset.editIndex = originalIndex;
-      const myModal = new bootstrap.Modal(document.getElementById("editModal"));
-      myModal.show();
     }
     
     /***********************
