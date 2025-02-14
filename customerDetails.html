@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Milk Distributor - Customer Details</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+        integrity="sha512-pbF6xD30cxEwZIRckHEcaNV9ZdO+psC0vok+oR6R1yHc6/H7G6x3gB3RR/RSgV0P7/1G3v/xZ1B3F/7Nkf0Ctw==" 
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <style>
+    body { background: #f0f8ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
+    .navbar-brand i { margin-right: 8px; }
+    .card { margin-bottom: 20px; border: none; border-radius: 12px; overflow: hidden; background: #fff; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
+    .fade-in { animation: fadeIn 0.8s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    #toastContainer { position: fixed; top: 1rem; right: 1rem; z-index: 1055; }
+    @media screen and (max-width: 768px) { #toastContainer { right: 50%; transform: translateX(50%); } }
+    /* Responsive table styling */
+    @media screen and (max-width: 768px) {
+      table.responsive-table, table.responsive-table thead, table.responsive-table tbody,
+      table.responsive-table th, table.responsive-table td, table.responsive-table tr { display: block; }
+      table.responsive-table thead tr { position: absolute; top: -9999px; left: -9999px; }
+      table.responsive-table tr { border: 1px solid #ccc; margin-bottom: 1rem; padding: 0.5rem; }
+      table.responsive-table td {
+        border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; text-align: right;
+      }
+      table.responsive-table td:before {
+        content: attr(data-label); position: absolute; top: 0; left: 6px; width: 45%; padding-right: 10px;
+        white-space: nowrap; font-weight: bold; text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
+  
+  <!-- Navigation Bar with Back Button -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <i class="fa-solid fa-cow"></i> Milk Distributor
+      </a>
+      <div class="ms-auto">
+        <button class="btn btn-light" onclick="goBack()">← Back</button>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Main Content -->
+  <div class="container my-4">
+    <h1 class="text-center mb-4">Customer Details</h1>
+    
+    <!-- Customer Information Card -->
+    <div id="customerInfo" class="card fade-in mb-4" style="display: none;">
+      <div class="card-header bg-info text-white">
+        <i class="fa-solid fa-address-card"></i> Customer Information
+      </div>
+      <div class="card-body">
+        <p><strong>Name:</strong> <span id="detailName"></span></p>
+        <p><strong>Customer ID:</strong> <span id="detailID"></span></p>
+        <p><strong>Phone No:</strong> <span id="detailPhone"></span></p>
+        <p><strong>Address:</strong> <span id="detailAddress"></span></p>
+      </div>
+    </div>
+    
+    <!-- Add Data Today Section -->
+    <div id="addDataTodaySection" class="card fade-in mb-4" style="display: none;">
+      <div class="card-header bg-success text-white">
+        <i class="fa-solid fa-calendar-plus"></i> Add Data Today
+      </div>
+      <div class="card-body">
+        <form id="addDataForm" onsubmit="saveTodayData(event)">
+          <div class="mb-3">
+            <label for="todayDate" class="form-label">Date</label>
+            <input type="date" class="form-control" id="todayDate" required />
+          </div>
+          <div class="mb-3">
+            <label for="milkType" class="form-label">Milk Type</label>
+            <select id="milkType" class="form-select" required>
+              <option value="cow" selected>Cow Milk</option>
+              <option value="buffalo">Buffalo Milk</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="todayQuantity" class="form-label">Quantity (in liters)</label>
+            <input type="number" class="form-control" id="todayQuantity" placeholder="Enter quantity" required />
+          </div>
+          <div class="mb-3">
+            <label for="todayPrice" class="form-label">Price (in ₹)</label>
+            <input type="number" readonly class="form-control" id="todayPrice" value="70" required />
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fa-solid fa-save"></i> Save
+          </button>
+        </form>
+      </div>
+    </div>
+    
+    <!-- Daily Data and Summary Section -->
+    <div id="customerDataSection" class="fade-in" style="display: none;">
+      <!-- Date Filter -->
+      <div id="dateFilterContainer" class="mb-4">
+        <label for="filterDate" class="form-label">Filter by Date</label>
+        <div class="input-group">
+          <input type="date" class="form-control" id="filterDate" onchange="filterDataByDate()" />
+          <button class="btn btn-outline-secondary" type="button" onclick="clearDateFilter()">Clear</button>
+        </div>
+      </div>
+      
+      <!-- Daily Data Table -->
+      <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">
+          <span><i class="fa-solid fa-table"></i> Daily Data</span>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered responsive-table" id="dataTable">
+              <thead class="table-light">
+                <tr>
+                  <th data-label="#">#</th>
+                  <th data-label="Date">Date</th>
+                  <th data-label="Day">Day</th>
+                  <th data-label="Milk Type">Milk Type</th>
+                  <th data-label="Quantity">Quantity</th>
+                  <th data-label="Price (in ₹)">Price (in ₹)</th>
+                </tr>
+              </thead>
+              <tbody id="dataTableBody">
+                <!-- Filled by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Summary Section -->
+      <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+          <span id="summaryHeading"><i class="fa-solid fa-chart-line"></i> Summary</span>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered responsive-table" id="summaryTable">
+              <thead class="table-light">
+                <tr>
+                  <th data-label="Total Days">Total Days</th>
+                  <th data-label="Total Quantity">Total Quantity</th>
+                  <th data-label="AVG Price (in ₹)">AVG Price (in ₹)</th>
+                  <th data-label="Total Payment (in ₹)">Total Payment (in ₹)</th>
+                </tr>
+              </thead>
+              <tbody id="summaryTableBody">
+                <!-- Filled by JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+  
+  <!-- Bootstrap Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Custom JavaScript -->
+  <script>
+    // Helper to get query parameter from URL
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+    
+    // Load customers from localStorage (or use dummy data)
+    let customers = {};
+    if (localStorage.getItem("customers")) {
+      customers = JSON.parse(localStorage.getItem("customers"));
+    } else {
+      customers = {
+        1: { name: "John Doe", id: 1, phone: "1234567890", address: "123 Milk St", monthQuantity: 50, paymentStatus: "Pending" },
+        2: { name: "Jane Smith", id: 2, phone: "0987654321", address: "456 Dairy Ave", monthQuantity: 30, paymentStatus: "Pending" },
+        3: { name: "Bob Johnson", id: 3, phone: "5551234567", address: "789 Cream Rd", monthQuantity: 40, paymentStatus: "Pending" }
+      };
+      localStorage.setItem("customers", JSON.stringify(customers));
+    }
+    
+    // Load dailyData from localStorage (or use dummy data)
+    let dailyData = [];
+    if (!localStorage.getItem("dailyData")) {
+      dailyData = [
+        { date: "2023-09-01", quantity: "10", price: "700", customerId: 1, milkType: "cow" },
+        { date: "2023-09-02", quantity: "5", price: "350", customerId: 2, milkType: "cow" },
+        { date: "2023-09-03", quantity: "8", price: "560", customerId: 3, milkType: "cow" },
+        { date: "2023-09-04", quantity: "12", price: "840", customerId: 1, milkType: "cow" }
+      ];
+      localStorage.setItem("dailyData", JSON.stringify(dailyData));
+    } else {
+      dailyData = JSON.parse(localStorage.getItem("dailyData"));
+    }
+    
+    // Helper: Get day name from date string
+    function getDayName(dateStr) {
+      const dateObj = new Date(dateStr);
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      return days[dateObj.getDay()];
+    }
+    
+    // Render Customer Information Card
+    function renderCustomerInfo(customerId) {
+      const cust = customers[customerId];
+      if (!cust) return;
+      document.getElementById("detailName").innerText = cust.name;
+      document.getElementById("detailID").innerText = cust.id;
+      document.getElementById("detailPhone").innerText = cust.phone;
+      document.getElementById("detailAddress").innerText = cust.address;
+      document.getElementById("customerInfo").style.display = "block";
+    }
+    
+    // Render "Add Data Today" Form (set default date to today)
+    function initializeAddDataForm() {
+      const today = new Date().toISOString().split("T")[0];
+      document.getElementById("todayDate").value = today;
+      document.getElementById("todayPrice").value = 70; // Default rate for cow milk
+      document.getElementById("addDataTodaySection").style.display = "block";
+    }
+    
+    // Update Price based on Quantity and Milk Type (cow: ₹70, buffalo: ₹80)
+    function updatePrice() {
+      const qty = parseFloat(document.getElementById("todayQuantity").value) || 0;
+      const milkType = document.getElementById("milkType").value;
+      const rate = milkType === "buffalo" ? 80 : 70;
+      document.getElementById("todayPrice").value = qty > 0 ? qty * rate : rate;
+    }
+    
+    document.getElementById("todayQuantity").addEventListener("input", updatePrice);
+    document.getElementById("milkType").addEventListener("change", updatePrice);
+    
+    // Save "Add Data Today" form data
+    function saveTodayData(event) {
+      event.preventDefault();
+      if (!currentCustomerId) {
+        showToast("No customer selected.", "danger");
+        return;
+      }
+      const date = document.getElementById("todayDate").value;
+      const quantity = document.getElementById("todayQuantity").value;
+      const price = document.getElementById("todayPrice").value;
+      const milkType = document.getElementById("milkType").value;
+      const newEntry = { date, quantity, price, customerId: currentCustomerId, milkType };
+      dailyData.push(newEntry);
+      // Save updated dailyData to localStorage
+      localStorage.setItem("dailyData", JSON.stringify(dailyData));
+      showToast("Data added successfully!", "success");
+      // Reset the form (and update price field)
+      document.getElementById("addDataForm").reset();
+      updatePrice();
+      // Re-render the daily data table and summary
+      renderDailyDataTable();
+      renderSummaryTable();
+    }
+    
+    // Render Daily Data Table
+    function renderDailyDataTable(filteredData = null) {
+      let dataToRender = filteredData;
+      if (!dataToRender) {
+        dataToRender = dailyData.filter(entry => entry.customerId == currentCustomerId);
+      }
+      const tbody = document.getElementById("dataTableBody");
+      tbody.innerHTML = "";
+      dataToRender.forEach((entry, idx) => {
+        const row = document.createElement("tr");
+        const dayName = getDayName(entry.date);
+        row.innerHTML = `
+          <td data-label="#">${idx + 1}</td>
+          <td data-label="Date">${entry.date}</td>
+          <td data-label="Day">${dayName}</td>
+          <td data-label="Milk Type">${entry.milkType === "buffalo" ? "Buffalo Milk" : "Cow Milk"}</td>
+          <td data-label="Quantity">${entry.quantity}L</td>
+          <td data-label="Price (in ₹)">₹${entry.price}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+    
+    // Render Summary Table
+    function renderSummaryTable() {
+      const summary = { totalDays: 0, totalQuantity: 0, totalPayment: 0 };
+      dailyData.filter(entry => entry.customerId == currentCustomerId)
+        .forEach(entry => {
+          summary.totalDays++;
+          summary.totalQuantity += parseFloat(entry.quantity);
+          summary.totalPayment += parseFloat(entry.price);
+        });
+      const tbody = document.getElementById("summaryTableBody");
+      tbody.innerHTML = `
+        <tr>
+          <td data-label="Total Days">${summary.totalDays}</td>
+          <td data-label="Total Quantity">${summary.totalQuantity}L</td>
+          <td data-label="AVG Price (in ₹)">₹${summary.totalQuantity > 0 ? (summary.totalPayment / summary.totalQuantity).toFixed(2) : 0}</td>
+          <td data-label="Total Payment (in ₹)">₹${summary.totalPayment}</td>
+        </tr>
+      `;
+    }
+    
+    // Date Filter Functions
+    function filterDataByDate() {
+      const selectedDate = document.getElementById("filterDate").value;
+      let filteredData = dailyData.filter(entry => entry.customerId == currentCustomerId);
+      if (selectedDate) {
+        filteredData = filteredData.filter(entry => entry.date === selectedDate);
+      }
+      renderDailyDataTable(filteredData);
+    }
+    
+    function clearDateFilter() {
+      document.getElementById("filterDate").value = "";
+      filterDataByDate();
+    }
+    
+    // Back button function
+    function goBack() { window.location.href = "index.html"; }
+    
+    // Global variable: current customer id from query parameter
+    let currentCustomerId = getQueryParam("customerId");
+    
+    // Initialize the page
+    function initialize() {
+      if (currentCustomerId) {
+        renderCustomerInfo(currentCustomerId);
+        initializeAddDataForm();
+        renderDailyDataTable();
+        renderSummaryTable();
+        document.getElementById("customerDataSection").style.display = "block";
+      } else {
+        showToast("No customer selected.", "danger");
+      }
+    }
+    document.addEventListener("DOMContentLoaded", initialize);
+    
+    // Toast Notifications
+    function showToast(message, type) {
+      const toastContainer = document.getElementById("toastContainer");
+      const toastEl = document.createElement("div");
+      toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+      toastEl.setAttribute("role", "alert");
+      toastEl.setAttribute("aria-live", "assertive");
+      toastEl.setAttribute("aria-atomic", "true");
+      toastEl.innerHTML = `<div class="d-flex">
+                              <div class="toast-body">${message}</div>
+                              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                           </div>`;
+      toastContainer.appendChild(toastEl);
+      const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+      toast.show();
+      toastEl.addEventListener("hidden.bs.toast", () => { toastEl.remove(); });
+    }
+  </script>
+</body>
+</html>
