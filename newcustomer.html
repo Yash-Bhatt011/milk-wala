@@ -109,7 +109,7 @@
   
   <!-- Main Content Container using Bootstrap Tabs -->
   <div class="container my-4">
-    <!-- Hidden Tabs to Control the Views -->
+    <!-- Hidden Tabs to Control Views -->
     <ul class="nav nav-tabs d-none" id="mainTab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="allCustomers-tab" data-bs-toggle="tab" data-bs-target="#allCustomers" 
@@ -220,15 +220,19 @@
             </div>
           </div>
           
+          <!-- Manual Date Filter for Daily Data -->
+          <div id="dateFilterContainer" class="mb-4" style="display: none;">
+            <label for="filterDate" class="form-label">Filter by Date</label>
+            <div class="input-group">
+              <input type="date" class="form-control" id="filterDate" onchange="filterDataByDate()" />
+              <button class="btn btn-outline-secondary" type="button" onclick="clearDateFilter()">Clear</button>
+            </div>
+          </div>
+          
           <!-- Daily Data Entries Section -->
           <div class="card mb-4">
             <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
               <span><i class="fa-solid fa-table" aria-hidden="true"></i> Customer Data Table</span>
-              <select id="monthSelector" class="form-select form-select-sm w-auto" onchange="filterMonthData()">
-                <option value="all" selected>All</option>
-                <option value="current">This Month</option>
-                <option value="6months">Last 6 Months</option>
-              </select>
             </div>
             <div class="card-body">
               <div class="table-responsive">
@@ -247,14 +251,14 @@
                     </tr>
                   </thead>
                   <tbody id="dataTableBody">
-                    <!-- Daily data entries will be rendered here by JavaScript -->
+                    <!-- Daily data entries will be rendered here -->
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
           
-          <!-- Summary Section (Now shows summary for single selected customer if one is selected) -->
+          <!-- Summary Section (shows summary for single selected customer if one is selected) -->
           <div class="card mb-4">
             <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
               <span id="summaryHeading"><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Summary</span>
@@ -278,7 +282,7 @@
                     </tr>
                   </thead>
                   <tbody id="summaryTableBody">
-                    <!-- Summary rows will be rendered here by JavaScript -->
+                    <!-- Summary rows will be rendered here -->
                   </tbody>
                 </table>
               </div>
@@ -289,9 +293,7 @@
       
       <!-- Registration Tab Pane -->
       <div class="tab-pane fade" id="addCustomer" role="tabpanel" aria-labelledby="addCustomer-tab">
-        <h1 class="text-center mb-4">
-          <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Registration
-        </h1>
+        <h1 class="text-center mb-4"><i class="fa-solid fa-user-plus" aria-hidden="true"></i> Registration</h1>
         <div class="card fade-in">
           <div class="card-body">
             <form id="addCustomerForm" onsubmit="registerCustomer(event)">
@@ -338,7 +340,7 @@
         </div>
         <div class="modal-body">
           <div id="invoiceContent">
-            <!-- Invoice details will be generated here by JavaScript -->
+            <!-- Invoice details will be generated here -->
           </div>
         </div>
         <div class="modal-footer">
@@ -446,10 +448,19 @@
       }
     }
     
-    function renderDailyDataTable() {
+    function renderDailyDataTable(filteredData = null) {
+      // If filteredData is provided, use it; otherwise, render all dailyData (for the selected customer if applicable).
+      let dataToRender = filteredData;
+      if (!dataToRender) {
+        if (currentCustomerId) {
+          dataToRender = dailyData.filter(entry => entry.customerId == currentCustomerId);
+        } else {
+          dataToRender = dailyData;
+        }
+      }
       const tbody = document.getElementById("dataTableBody");
       tbody.innerHTML = "";
-      dailyData.forEach((entry, idx) => {
+      dataToRender.forEach((entry, idx) => {
         const row = document.createElement("tr");
         const dayName = getDayName(entry.date);
         row.innerHTML = `<td data-label="#">${idx + 1}</td>
@@ -461,7 +472,7 @@
                          <td data-label="Quantity">${entry.quantity}L</td>
                          <td data-label="Price (in ₹)">₹${entry.price}</td>
                          <td data-label="Edit">
-                           <button class="btn btn-sm btn-warning" onclick="openEditModalFromIndex(${idx}, event, this)">
+                           <button class="btn btn-sm btn-warning" onclick="openEditModalFromIndex(${dailyData.indexOf(entry)}, event, this)">
                              <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
                            </button>
                          </td>`;
@@ -475,7 +486,6 @@
       tbody.innerHTML = "";
       let summary = {};
       
-      // If a customer is selected, compute summary for that customer only.
       if (currentCustomerId) {
         summary[currentCustomerId] = { totalDays: 0, totalQuantity: 0, totalPayment: 0 };
         dailyData.forEach(entry => {
@@ -485,15 +495,12 @@
             summary[currentCustomerId].totalPayment += parseFloat(entry.price);
           }
         });
-        // Optionally, update the summary heading.
         document.getElementById("summaryHeading").innerText = "Summary for " + customers[currentCustomerId].name;
       } else {
-        // Otherwise, show summary for all customers.
         summary = computeSummary();
         document.getElementById("summaryHeading").innerText = "Summary";
       }
       
-      // Render the summary rows.
       for (let custId in summary) {
         const data = summary[custId];
         const cust = customers[custId];
@@ -536,6 +543,27 @@
     }
     
     /***********************
+     * Date Filter Functions
+     ***********************/
+    function filterDataByDate() {
+      if (!currentCustomerId) {
+        renderDailyDataTable();
+        return;
+      }
+      const selectedDate = document.getElementById("filterDate").value;
+      let filteredData = dailyData.filter(entry => entry.customerId == currentCustomerId);
+      if (selectedDate) {
+        filteredData = filteredData.filter(entry => entry.date === selectedDate);
+      }
+      renderDailyDataTable(filteredData);
+    }
+    
+    function clearDateFilter() {
+      document.getElementById("filterDate").value = "";
+      filterDataByDate();
+    }
+    
+    /***********************
      * Event Handlers & Initialization
      ***********************/
     function initialize() {
@@ -563,10 +591,14 @@
         document.getElementById("todayDate").value = today;
         document.getElementById("selectedCustomer").innerText = "Selected Customer: " + cust.name + " (ID: " + cust.id + ")";
         document.getElementById("customerDetailsSection").style.display = "block";
+        // Show the manual date filter when a customer is selected.
+        document.getElementById("dateFilterContainer").style.display = "block";
         // Hide the toggle button when a customer is selected.
         document.getElementById("toggleViewBtn").style.display = "none";
-        // Update the summary table for the selected customer.
+        // Update summary for the selected customer.
         renderSummaryTable();
+        // Initially, show all daily data for the selected customer.
+        renderDailyDataTable(dailyData.filter(entry => entry.customerId == customerId));
         window.scrollTo({ top: document.getElementById("customerDetailsSection").offsetTop, behavior: "smooth" });
       }
     }
@@ -608,7 +640,8 @@
       };
       dailyData.push(newEntry);
       updateCustomersMonthlyQuantity();
-      renderDailyDataTable();
+      // Reapply date filter after saving
+      filterDataByDate();
       renderSummaryTable();
       showToast("Data saved successfully!", "success");
       document.getElementById("addDataForm").reset();
