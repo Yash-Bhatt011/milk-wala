@@ -36,7 +36,7 @@
     .fade-in { animation: fadeIn 0.8s ease-in-out; }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .pointer { cursor: pointer; }
     /* Table Hover */
@@ -46,8 +46,34 @@
     .input-group-text { background-color: #e9ecef; border-left: none; color: #007bff; }
     /* Toast Position */
     #toastContainer { position: fixed; top: 1rem; right: 1rem; z-index: 1055; }
+    /* On mobile, center the toast container */
+    @media screen and (max-width: 768px) {
+      #toastContainer {
+        right: 50%;
+        transform: translateX(50%);
+      }
+    }
     /* Invoice Modal Custom */
     .invoice-table th, .invoice-table td { vertical-align: middle; }
+    
+    /* Center text in All Customers table */
+    #customersTable th, 
+    #customersTable td {
+      text-align: center;
+    }
+    
+    /* Custom Edit Button Styling */
+    .btn-edit {
+      background-color: #17a2b8; /* Bootstrap info color */
+      border: none;
+      color: #fff;
+      border-radius: 4px;
+      padding: 0.375rem 0.75rem;
+      transition: background-color 0.3s;
+    }
+    .btn-edit:hover {
+      background-color: #138496;
+    }
     
     /* Responsive Table Styles for Mobile Devices */
     @media screen and (max-width: 768px) {
@@ -100,7 +126,6 @@
       <a class="navbar-brand" href="#">
         <i class="fa-solid fa-cow" aria-hidden="true"></i> Milk Distributor
       </a>
-      <!-- Toggle Button placed on the right side -->
       <div class="ms-auto">
         <button id="toggleViewBtn" class="btn btn-light" onclick="toggleView()">Register</button>
       </div>
@@ -152,7 +177,7 @@
                   </tr>
                 </thead>
                 <tbody id="customersTableBody">
-                  <!-- Customers will be rendered here by JavaScript -->
+                  <!-- Customers will be rendered here -->
                 </tbody>
               </table>
             </div>
@@ -231,7 +256,7 @@
           
           <!-- Daily Data Entries Section -->
           <div class="card mb-4">
-            <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+            <div class="card-header bg-secondary text-white">
               <span><i class="fa-solid fa-table" aria-hidden="true"></i> Customer Data Table</span>
             </div>
             <div class="card-body">
@@ -251,7 +276,7 @@
                     </tr>
                   </thead>
                   <tbody id="dataTableBody">
-                    <!-- Daily data entries will be rendered here -->
+                    <!-- Daily data entries will be rendered here by JavaScript -->
                   </tbody>
                 </table>
               </div>
@@ -282,7 +307,7 @@
                     </tr>
                   </thead>
                   <tbody id="summaryTableBody">
-                    <!-- Summary rows will be rendered here -->
+                    <!-- Summary rows will be rendered here by JavaScript -->
                   </tbody>
                 </table>
               </div>
@@ -318,9 +343,18 @@
                 <label for="customerPassword" class="form-label">Password</label>
                 <input type="password" class="form-control" id="customerPassword" placeholder="Enter password" required minlength="6" autocomplete="new-password" />
               </div>
-              <button type="submit" class="btn btn-primary w-100">
-                <i class="fa-solid fa-plus" aria-hidden="true"></i> Register
-              </button>
+              <div class="row">
+                <div class="col-6">
+                  <button type="submit" class="btn btn-primary w-100">
+                    <i class="fa-solid fa-plus"></i> Submit
+                  </button>
+                </div>
+                <div class="col-6">
+                  <button type="reset" class="btn btn-secondary w-100">
+                    <i class="fa-solid fa-rotate-left"></i> Reset
+                  </button>
+                </div>
+              </div>
             </form>
           </div>
         </div>
@@ -340,7 +374,7 @@
         </div>
         <div class="modal-body">
           <div id="invoiceContent">
-            <!-- Invoice details will be generated here -->
+            <!-- Invoice details will be generated here by JavaScript -->
           </div>
         </div>
         <div class="modal-footer">
@@ -449,7 +483,6 @@
     }
     
     function renderDailyDataTable(filteredData = null) {
-      // If filteredData is provided, use it; otherwise, render all dailyData (for the selected customer if applicable).
       let dataToRender = filteredData;
       if (!dataToRender) {
         if (currentCustomerId) {
@@ -472,15 +505,14 @@
                          <td data-label="Quantity">${entry.quantity}L</td>
                          <td data-label="Price (in ₹)">₹${entry.price}</td>
                          <td data-label="Edit">
-                           <button class="btn btn-sm btn-warning" onclick="openEditModalFromIndex(${dailyData.indexOf(entry)}, event, this)">
-                             <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                           <button class="btn btn-sm btn-edit" onclick="openEditModalFromIndex(${dailyData.indexOf(entry)}, event, this)">
+                             <i class="fa-solid fa-pen-to-square"></i>
                            </button>
                          </td>`;
         tbody.appendChild(row);
       });
     }
     
-    // Modified renderSummaryTable: if a customer is selected, show summary only for that customer.
     function renderSummaryTable() {
       const tbody = document.getElementById("summaryTableBody");
       tbody.innerHTML = "";
@@ -591,26 +623,20 @@
         document.getElementById("todayDate").value = today;
         document.getElementById("selectedCustomer").innerText = "Selected Customer: " + cust.name + " (ID: " + cust.id + ")";
         document.getElementById("customerDetailsSection").style.display = "block";
-        // Show the manual date filter when a customer is selected.
         document.getElementById("dateFilterContainer").style.display = "block";
-        // Hide the toggle button when a customer is selected.
         document.getElementById("toggleViewBtn").style.display = "none";
-        // Update summary for the selected customer.
         renderSummaryTable();
-        // Initially, show all daily data for the selected customer.
         renderDailyDataTable(dailyData.filter(entry => entry.customerId == customerId));
         window.scrollTo({ top: document.getElementById("customerDetailsSection").offsetTop, behavior: "smooth" });
       }
     }
     
-    // Ensure the toggle button is visible if no customer is selected.
     if (!currentCustomerId) {
       document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("toggleViewBtn").style.display = "block";
       });
     }
     
-    // Update price automatically based on quantity and selected milk type.
     function updatePrice() {
       const qty = parseFloat(document.getElementById("todayQuantity").value) || 0;
       const milkType = document.getElementById("milkType").value;
@@ -640,7 +666,6 @@
       };
       dailyData.push(newEntry);
       updateCustomersMonthlyQuantity();
-      // Reapply date filter after saving
       filterDataByDate();
       renderSummaryTable();
       showToast("Data saved successfully!", "success");
@@ -648,23 +673,20 @@
       document.getElementById("todayPrice").value = milkRates["cow"];
     }
     
-    // Registration: Customer Registration function (email removed)
     function registerCustomer(event) {
       event.preventDefault();
       const name = document.getElementById("customerName").value;
       const phone = document.getElementById("customerPhone").value;
       const address = document.getElementById("customerAddress").value;
       const password = document.getElementById("customerPassword").value;
-      
       console.log("Registering new customer:", name);
-      
       const newId = Object.keys(customers).length + 1;
       customers[newId] = { 
         name, 
         id: newId, 
         phone, 
         address, 
-        password,  // In production, use hashed passwords!
+        password,
         monthQuantity: 0,
         paymentStatus: "Pending"
       };
@@ -674,7 +696,6 @@
       document.getElementById("addCustomerForm").reset();
     }
     
-    // Toggle View: switch between All Customers and Registration sections using Bootstrap Tab API.
     function toggleView() {
       const allCustTabEl = document.getElementById("allCustomers-tab");
       const regTabEl = document.getElementById("addCustomer-tab");
@@ -689,7 +710,6 @@
       toggleBtn.style.display = "block";
     }
     
-    // Toast notifications
     function showToast(message, type) {
       console.log("Showing toast:", message);
       const toastContainer = document.getElementById("toastContainer");
@@ -708,9 +728,6 @@
       toastEl.addEventListener("hidden.bs.toast", () => { toastEl.remove(); });
     }
     
-    /***********************
-     * Edit Daily Data Functions
-     ***********************/
     function openEditModalFromIndex(index, event, btn) {
       event.stopPropagation();
       currentEditingRow = btn.closest("tr");
@@ -744,47 +761,74 @@
       renderSummaryTable();
     }
     
-    /***********************
-     * Invoice & Payment Integration (Simulated)
-     ***********************/
     function generateInvoice() {
-      let content = `<h5 class="mb-3">Invoice Summary</h5>
-                     <div class="table-responsive">
-                     <table class="table table-bordered invoice-table">
-                       <thead class="table-light">
-                         <tr>
-                           <th>Customer ID</th>
-                           <th>Customer Name</th>
-                           <th>Total Payment (in ₹)</th>
-                           <th>Status</th>
-                           <th>Actions</th>
-                         </tr>
-                       </thead>
-                       <tbody>`;
+      let content = "";
       let hasPending = false;
       const summary = computeSummary();
-      for (const custId in summary) {
-        const data = summary[custId];
-        const cust = customers[custId];
-        if (data.totalPayment > 0 && cust.paymentStatus === "Pending") {
-          hasPending = true;
-          content += `<tr>
-                        <td>${custId}</td>
-                        <td>${cust.name}</td>
-                        <td>₹${data.totalPayment}</td>
-                        <td>${cust.paymentStatus}</td>
-                        <td>
-                          <button class="btn btn-sm btn-success me-2" onclick="payInvoice(${custId})">
-                            <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Pay Now
-                          </button>
-                          <button class="btn btn-sm btn-warning" onclick="sendReminder(${custId})">
-                            <i class="fa-solid fa-bell" aria-hidden="true"></i> Send Reminder
-                          </button>
-                        </td>
-                      </tr>`;
+      if (window.innerWidth <= 768) {
+        content += `<div class="row">`;
+        for (let custId in summary) {
+          const data = summary[custId];
+          const cust = customers[custId];
+          if (data.totalPayment > 0 && cust.paymentStatus === "Pending") {
+            hasPending = true;
+            content += `<div class="col-12 mb-3">
+                          <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                              Customer ID: ${custId} - ${cust.name}
+                            </div>
+                            <div class="card-body">
+                              <p><strong>Total Payment (in ₹):</strong> ₹${data.totalPayment}</p>
+                              <p><strong>Status:</strong> ${cust.paymentStatus}</p>
+                              <button class="btn btn-sm btn-success me-2" onclick="payInvoice(${custId})">
+                                <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Pay Now
+                              </button>
+                              <button class="btn btn-sm btn-warning" onclick="sendReminder(${custId})">
+                                <i class="fa-solid fa-bell" aria-hidden="true"></i> Send Reminder
+                              </button>
+                            </div>
+                          </div>
+                        </div>`;
+          }
         }
+        content += `</div>`;
+      } else {
+        content += `<h5 class="mb-3">Invoice Summary</h5>
+                    <div class="table-responsive">
+                      <table class="table table-bordered invoice-table">
+                        <thead class="table-light">
+                          <tr>
+                            <th>Customer ID</th>
+                            <th>Customer Name</th>
+                            <th>Total Payment (in ₹)</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+        for (let custId in summary) {
+          const data = summary[custId];
+          const cust = customers[custId];
+          if (data.totalPayment > 0 && cust.paymentStatus === "Pending") {
+            hasPending = true;
+            content += `<tr>
+                          <td>${custId}</td>
+                          <td>${cust.name}</td>
+                          <td>₹${data.totalPayment}</td>
+                          <td>${cust.paymentStatus}</td>
+                          <td>
+                            <button class="btn btn-sm btn-success me-2" onclick="payInvoice(${custId})">
+                              <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Pay Now
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="sendReminder(${custId})">
+                              <i class="fa-solid fa-bell" aria-hidden="true"></i> Send Reminder
+                            </button>
+                          </td>
+                        </tr>`;
+          }
+        }
+        content += `</tbody></table></div>`;
       }
-      content += `</tbody></table></div>`;
       if (!hasPending) {
         content = `<p class="text-center">All invoices are paid!</p>`;
       }
@@ -807,9 +851,6 @@
       showToast("Payment reminder sent to " + cust.name + "!", "warning");
     }
     
-    /***********************
-     * Search Filter
-     ***********************/
     document.getElementById("searchInput").addEventListener("keyup", function() {
       const filter = this.value.toLowerCase();
       const rows = document.querySelectorAll("#customersTable tbody tr");
