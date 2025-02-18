@@ -11,33 +11,37 @@
         integrity="sha512-pbF6xD30cxEwZIRckHEcaNV9ZdO+psC0vok+oR6R1yHc6/H7G6x3gB3RR/RSgV0P7/1G3v/xZ1B3F/7Nkf0Ctw==" 
         crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
-    body { background: #f0f8ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
+    body { 
+      background: #f0f8ff; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      color: #333; 
+    }
     .navbar-brand i { margin-right: 8px; }
-    .card { margin-bottom: 20px; border: none; border-radius: 12px; overflow: hidden; background: #fff; transition: transform 0.3s ease, box-shadow 0.3s ease; }
-    .card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
+    .card { 
+      margin-bottom: 20px; 
+      border: none; 
+      border-radius: 12px; 
+      overflow: hidden; 
+      background: #fff; 
+      transition: transform 0.3s, box-shadow 0.3s; 
+    }
+    .card:hover { 
+      transform: translateY(-4px); 
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15); 
+    }
     .fade-in { animation: fadeIn 0.8s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(20px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
     .pointer { cursor: pointer; }
     .table-hover tbody tr:hover { background-color: #f1f7ff; }
     .input-group .form-control { border-right: none; }
     .input-group-text { background-color: #e9ecef; border-left: none; color: #007bff; }
     #toastContainer { position: fixed; top: 1rem; right: 1rem; z-index: 1055; }
-    @media screen and (max-width: 768px) { #toastContainer { right: 50%; transform: translateX(50%); } }
+    @media (max-width: 768px) { #toastContainer { right: 50%; transform: translateX(50%); } }
     #customersTable th, #customersTable td { text-align: center; }
-    /* Responsive table styling */
-    @media screen and (max-width: 768px) {
-      table.responsive-table, table.responsive-table thead, table.responsive-table tbody,
-      table.responsive-table th, table.responsive-table td, table.responsive-table tr { display: block; }
-      table.responsive-table thead tr { position: absolute; top: -9999px; left: -9999px; }
-      table.responsive-table tr { border: 1px solid #ccc; margin-bottom: 1rem; padding: 0.5rem; }
-      table.responsive-table td {
-        border: none; border-bottom: 1px solid #eee; position: relative; padding-left: 50%; text-align: right;
-      }
-      table.responsive-table td:before {
-        content: attr(data-label); position: absolute; top: 0; left: 6px; width: 45%; padding-right: 10px;
-        white-space: nowrap; font-weight: bold; text-align: left;
-      }
-    }
+    .table-responsive { overflow-x: auto; }
   </style>
 </head>
 <body>
@@ -59,20 +63,22 @@
   <!-- Main Content -->
   <div class="container my-4">
     <h1 class="text-center mb-4">All Customers</h1>
+    
     <!-- Search Filter -->
     <div class="row mb-3">
       <div class="col-12 col-md-6">
         <div class="input-group">
           <span class="input-group-text" id="searchIcon"><i class="fa-solid fa-magnifying-glass"></i></span>
-          <input type="text" class="form-control" placeholder="Search by name or ID" id="searchInput" aria-describedby="searchIcon" />
+          <input type="text" class="form-control" placeholder="Search by name or ID" id="searchInput" aria-describedby="searchIcon">
         </div>
       </div>
     </div>
+    
     <!-- Customers Table -->
     <div class="card fade-in mb-4">
       <div class="card-body">
         <div class="table-responsive">
-          <table class="table table-hover responsive-table" id="customersTable">
+          <table class="table table-hover" id="customersTable">
             <thead class="table-light">
               <tr>
                 <th data-label="#">#</th>
@@ -90,33 +96,62 @@
         </div>
       </div>
     </div>
+    
+    <!-- Monthly Summary Section -->
+    <div class="card fade-in mb-4">
+      <div class="card-header bg-secondary text-white">
+        <span>Monthly Summary</span>
+      </div>
+      <div class="card-body">
+        <div class="mb-3">
+          <label for="monthSelector" class="form-label">Select Month</label>
+          <input type="month" id="monthSelector" class="form-control" onchange="updateMonthlySummary()">
+        </div>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Total Customers</th>
+              <th>Due Payments (in ₹)</th>
+              <th>Received Payments (in ₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="totalCustomersSummary">0</td>
+              <td id="duePaymentsSummary">0</td>
+              <td id="receivedPaymentsSummary">0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
   </div>
   
   <!-- Bootstrap Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
-  <!-- Custom JavaScript -->
   <script>
-    // Initialize dummy data if not present in localStorage
+    // Load or initialize customers from localStorage
     let customers = {};
-    if (!localStorage.getItem("customers")) {
+    if (localStorage.getItem("customers")) {
+      customers = JSON.parse(localStorage.getItem("customers"));
+    } else {
       customers = {
         1: { name: "John Doe", id: 1, phone: "1234567890", address: "123 Milk St", monthQuantity: 50, paymentStatus: "Pending" },
         2: { name: "Jane Smith", id: 2, phone: "0987654321", address: "456 Dairy Ave", monthQuantity: 30, paymentStatus: "Pending" },
         3: { name: "Bob Johnson", id: 3, phone: "5551234567", address: "789 Cream Rd", monthQuantity: 40, paymentStatus: "Pending" }
       };
       localStorage.setItem("customers", JSON.stringify(customers));
-    } else {
-      customers = JSON.parse(localStorage.getItem("customers"));
     }
     
+    // Load or initialize dailyData from localStorage (with paymentStatus)
     let dailyData = [];
     if (!localStorage.getItem("dailyData")) {
       dailyData = [
-        { date: "2023-09-01", quantity: "10", price: "700", customerId: 1, milkType: "cow" },
-        { date: "2023-09-02", quantity: "5", price: "350", customerId: 2, milkType: "cow" },
-        { date: "2023-09-03", quantity: "8", price: "560", customerId: 3, milkType: "cow" },
-        { date: "2023-09-04", quantity: "12", price: "840", customerId: 1, milkType: "cow" }
+        { date: "2023-09-01", quantity: "10", price: "700", customerId: 1, milkType: "cow", paymentStatus: "Due" },
+        { date: "2023-09-02", quantity: "5", price: "350", customerId: 2, milkType: "cow", paymentStatus: "Received" },
+        { date: "2023-09-03", quantity: "8", price: "560", customerId: 3, milkType: "cow", paymentStatus: "Due" },
+        { date: "2023-09-04", quantity: "12", price: "840", customerId: 1, milkType: "cow", paymentStatus: "Received" }
       ];
       localStorage.setItem("dailyData", JSON.stringify(dailyData));
     } else {
@@ -149,19 +184,52 @@
       window.location.href = "customerDetails.html?customerId=" + customerId;
     }
     
-    // Search Filter
+    // Search Filter: search by Customer ID and Name
     document.getElementById("searchInput").addEventListener("keyup", function() {
       const filter = this.value.toLowerCase();
       const rows = document.querySelectorAll("#customersTable tbody tr");
       rows.forEach(row => {
-        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
+        const custId = row.cells[1].textContent.toLowerCase();
+        const name = row.cells[2].textContent.toLowerCase();
+        row.style.display = (custId.includes(filter) || name.includes(filter)) ? "" : "none";
       });
     });
     
-    function initialize() {
-      renderCustomersTable();
+    // Monthly Summary Function: Update summary based on selected month (format "YYYY-MM")
+    function updateMonthlySummary() {
+      const selectedMonth = document.getElementById("monthSelector").value;
+      if (!selectedMonth) return;
+      // Filter dailyData whose date starts with selectedMonth
+      const filteredEntries = dailyData.filter(entry => entry.date.substring(0,7) === selectedMonth);
+      // Count unique customers
+      const uniqueCustomers = new Set(filteredEntries.map(entry => entry.customerId));
+      const totalCustomers = uniqueCustomers.size;
+      // Sum due and received payments
+      let duePayments = 0, receivedPayments = 0;
+      filteredEntries.forEach(entry => {
+        const amount = parseFloat(entry.price) || 0;
+        if (entry.paymentStatus && entry.paymentStatus.toLowerCase() === "received") {
+          receivedPayments += amount;
+        } else {
+          duePayments += amount;
+        }
+      });
+      document.getElementById("totalCustomersSummary").innerText = totalCustomers;
+      document.getElementById("duePaymentsSummary").innerText = duePayments;
+      document.getElementById("receivedPaymentsSummary").innerText = receivedPayments;
     }
-    document.addEventListener("DOMContentLoaded", initialize);
+    
+    // Set default month in monthSelector to current month and update summary on load
+    document.addEventListener("DOMContentLoaded", () => {
+      const monthInput = document.getElementById("monthSelector");
+      const today = new Date();
+      const month = today.getMonth() + 1;
+      const year = today.getFullYear();
+      const formattedMonth = (month < 10 ? "0" : "") + month;
+      monthInput.value = `${year}-${formattedMonth}`;
+      updateMonthlySummary();
+      renderCustomersTable();
+    });
     
     // Toast Notifications
     function showToast(message, type) {
@@ -180,6 +248,12 @@
       toast.show();
       toastEl.addEventListener("hidden.bs.toast", () => { toastEl.remove(); });
     }
+    
+    // Dashboard Initialization
+    function initialize() {
+      renderCustomersTable();
+    }
+    document.addEventListener("DOMContentLoaded", initialize);
   </script>
 </body>
 </html>

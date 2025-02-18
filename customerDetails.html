@@ -11,56 +11,20 @@
         integrity="sha512-pbF6xD30cxEwZIRckHEcaNV9ZdO+psC0vok+oR6R1yHc6/H7G6x3gB3RR/RSgV0P7/1G3v/xZ1B3F/7Nkf0Ctw==" 
         crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
-    body {
-      background: #f0f8ff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #333;
-    }
-    .navbar-brand i {
-      margin-right: 8px;
-    }
-    .card {
-      margin-bottom: 20px;
-      border: none;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #fff;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0,0,0,0.15);
-    }
-    .fade-in {
-      animation: fadeIn 0.8s ease-in-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    #toastContainer {
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      z-index: 1055;
-    }
-    @media screen and (max-width: 768px) {
-      #toastContainer {
-        right: 50%;
-        transform: translateX(50%);
-      }
-    }
-    /* Keep table in its tabular format (with horizontal scroll) */
-    .table-responsive {
-      overflow-x: auto;
-    }
+    body { background: #f0f8ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
+    .navbar-brand i { margin-right: 8px; }
+    .card { margin-bottom: 20px; border: none; border-radius: 12px; overflow: hidden; background: #fff; transition: transform 0.3s, box-shadow 0.3s; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
+    .fade-in { animation: fadeIn 0.8s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    #toastContainer { position: fixed; top: 1rem; right: 1rem; z-index: 1055; }
+    @media (max-width: 768px) { #toastContainer { right: 50%; transform: translateX(50%); } }
+    .table-responsive { overflow-x: auto; }
   </style>
 </head>
 <body>
-  <!-- Toast Notifications -->
   <div id="toastContainer"></div>
   
-  <!-- Navigation Bar with Back Button -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
@@ -72,7 +36,6 @@
     </div>
   </nav>
   
-  <!-- Main Content -->
   <div class="container my-4">
     <h1 class="text-center mb-4">Customer Details</h1>
     
@@ -165,7 +128,6 @@
                 <tr>
                   <th data-label="#">#</th>
                   <th data-label="Date">Date</th>
-                  <th data-label="Day">Day</th>
                   <th data-label="Milk Type">Milk Type</th>
                   <th data-label="Quantity">Quantity</th>
                   <th data-label="Price (in ₹)">Price (in ₹)</th>
@@ -173,7 +135,7 @@
                 </tr>
               </thead>
               <tbody id="dataTableBody">
-                <!-- Filled by JavaScript -->
+                <!-- Filled via JavaScript -->
               </tbody>
             </table>
           </div>
@@ -199,7 +161,7 @@
                 </tr>
               </thead>
               <tbody id="summaryTableBody">
-                <!-- Filled by JavaScript -->
+                <!-- Filled via JavaScript -->
               </tbody>
             </table>
           </div>
@@ -249,12 +211,11 @@
   
   <!-- Bootstrap Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  
   <script>
     // Global variable for toggling "Show More" state
     let showAllDailyData = false;
     
-    // Helper: Get query parameter value from URL
+    // Helper: Get query parameter value
     function getQueryParam(param) {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(param);
@@ -277,17 +238,17 @@
     let dailyData = [];
     if (!localStorage.getItem("dailyData")) {
       dailyData = [
-        { date: "2023-09-01", quantity: "10", price: "700", customerId: 1, milkType: "cow" },
-        { date: "2023-09-02", quantity: "5", price: "350", customerId: 2, milkType: "cow" },
-        { date: "2023-09-03", quantity: "8", price: "560", customerId: 3, milkType: "cow" },
-        { date: "2023-09-04", quantity: "12", price: "840", customerId: 1, milkType: "cow" }
+        { date: "2023-09-01", quantity: "10", price: "700", customerId: 1, milkType: "cow", paymentStatus: "Due" },
+        { date: "2023-09-02", quantity: "5", price: "350", customerId: 2, milkType: "cow", paymentStatus: "Received" },
+        { date: "2023-09-03", quantity: "8", price: "560", customerId: 3, milkType: "cow", paymentStatus: "Due" },
+        { date: "2023-09-04", quantity: "12", price: "840", customerId: 1, milkType: "cow", paymentStatus: "Received" }
       ];
       localStorage.setItem("dailyData", JSON.stringify(dailyData));
     } else {
       dailyData = JSON.parse(localStorage.getItem("dailyData"));
     }
     
-    // Helper: Get day name from a date string
+    // Helper: Get day name from date string (not used anymore)
     function getDayName(dateStr) {
       const dateObj = new Date(dateStr);
       const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -404,7 +365,7 @@
       renderSummaryTable();
     }
     
-    // Render Daily Data Table with "Show More/Less" and Edit Option
+    // Render Daily Data Table with "Show More/Less" and Edit Option (without "Day" column)
     function renderDailyDataTable(filteredData = null) {
       let fullData = filteredData;
       if (!fullData) {
@@ -419,14 +380,11 @@
       }
       
       dataToRender.forEach((entry) => {
-        // Get the global index of this entry in dailyData array
         const index = dailyData.indexOf(entry);
         const row = document.createElement("tr");
-        const dayName = getDayName(entry.date);
         row.innerHTML = `
           <td data-label="#">${index + 1}</td>
           <td data-label="Date">${entry.date}</td>
-          <td data-label="Day">${dayName}</td>
           <td data-label="Milk Type">${entry.milkType === "buffalo" ? "Buffalo Milk" : "Cow Milk"}</td>
           <td data-label="Quantity">${entry.quantity}L</td>
           <td data-label="Price (in ₹)">₹${entry.price}</td>
@@ -439,15 +397,12 @@
         tbody.appendChild(row);
       });
       
-      // Show "Show More" / "Show Less" button if there are more than 3 entries
       const showMoreContainer = document.getElementById("showMoreContainer");
       if (fullData.length > 3) {
         showMoreContainer.style.display = "block";
-        if (showAllDailyData) {
-          showMoreContainer.innerHTML = '<button class="btn btn-sm btn-outline-secondary" onclick="toggleShowMore()">Show Less</button>';
-        } else {
-          showMoreContainer.innerHTML = '<button class="btn btn-sm btn-outline-secondary" onclick="toggleShowMore()">Show More</button>';
-        }
+        showMoreContainer.innerHTML = showAllDailyData
+          ? '<button class="btn btn-sm btn-outline-secondary" onclick="toggleShowMore()">Show Less</button>'
+          : '<button class="btn btn-sm btn-outline-secondary" onclick="toggleShowMore()">Show More</button>';
       } else {
         showMoreContainer.style.display = "none";
       }
@@ -501,7 +456,7 @@
     // Global: current customer id from query parameter
     let currentCustomerId = getQueryParam("customerId");
     
-    // Initialize the page
+    // Initialize page
     function initialize() {
       if (currentCustomerId) {
         renderCustomerInfo(currentCustomerId);
@@ -548,7 +503,6 @@
       modal.show();
     }
     
-    // Update price in edit modal when quantity or milk type changes
     function updateEditPrice() {
       const qty = parseFloat(document.getElementById("editQuantity").value) || 0;
       const milkType = document.getElementById("editMilkType").value;
@@ -558,7 +512,6 @@
     document.getElementById("editQuantity").addEventListener("input", updateEditPrice);
     document.getElementById("editMilkType").addEventListener("change", updateEditPrice);
     
-    // Save edited daily data entry
     function saveDailyDataEdit(event) {
       event.preventDefault();
       const newDate = document.getElementById("editDate").value;
@@ -579,7 +532,6 @@
       const modal = bootstrap.Modal.getInstance(modalEl);
       modal.hide();
     }
-    
   </script>
   
 </body>

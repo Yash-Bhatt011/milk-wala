@@ -13,19 +13,17 @@
   <style>
     body { background: #f0f8ff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #333; }
     .navbar-brand i { margin-right: 8px; }
-    .card { margin-bottom: 20px; border: none; border-radius: 12px; overflow: hidden; background: #fff; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .card { margin-bottom: 20px; border: none; border-radius: 12px; overflow: hidden; background: #fff; transition: transform 0.3s, box-shadow 0.3s; }
     .card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
     .fade-in { animation: fadeIn 0.8s ease-in-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     #toastContainer { position: fixed; top: 1rem; right: 1rem; z-index: 1055; }
-    @media screen and (max-width: 768px) { #toastContainer { right: 50%; transform: translateX(50%); } }
+    @media (max-width: 768px) { #toastContainer { right: 50%; transform: translateX(50%); } }
   </style>
 </head>
 <body>
-  <!-- Toast Notifications -->
   <div id="toastContainer"></div>
   
-  <!-- Navigation Bar with Back Button -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
@@ -37,7 +35,6 @@
     </div>
   </nav>
   
-  <!-- Registration Form -->
   <div class="container my-4">
     <h1 class="text-center mb-4">Registration</h1>
     <div class="card fade-in">
@@ -45,15 +42,15 @@
         <form id="addCustomerForm" onsubmit="registerCustomer(event)">
           <div class="mb-3">
             <label for="customerName" class="form-label">Name</label>
-            <input type="text" class="form-control" id="customerName" placeholder="Enter your name" required autocomplete="name" />
+            <input type="text" class="form-control" id="customerName" placeholder="Enter your name" required autocomplete="name">
           </div>
           <div class="mb-3">
             <label for="customerPhone" class="form-label">Phone Number</label>
-            <input type="tel" class="form-control" id="customerPhone" placeholder="Enter your phone number" required autocomplete="tel" pattern="\d{10}" />
+            <input type="tel" class="form-control" id="customerPhone" placeholder="Enter your phone number" required autocomplete="tel" pattern="\d{10}">
           </div>
           <div class="mb-3">
             <label for="customerAddress" class="form-label">Address</label>
-            <input type="text" class="form-control" id="customerAddress" placeholder="Enter your address" required autocomplete="street-address" list="addressSuggestions" />
+            <input type="text" class="form-control" id="customerAddress" placeholder="Enter your address" required autocomplete="street-address" list="addressSuggestions">
             <datalist id="addressSuggestions">
               <option value="123 Milk St">
               <option value="456 Dairy Ave">
@@ -62,7 +59,7 @@
           </div>
           <div class="mb-3">
             <label for="customerPassword" class="form-label">Password</label>
-            <input type="password" class="form-control" id="customerPassword" placeholder="Enter password" required minlength="6" autocomplete="new-password" />
+            <input type="password" class="form-control" id="customerPassword" placeholder="Enter password" required minlength="6" autocomplete="new-password">
           </div>
           <div class="row">
             <div class="col-6">
@@ -81,15 +78,12 @@
     </div>
   </div>
   
-  <!-- Bootstrap Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Custom JavaScript -->
   <script>
     function goBack() {
       window.location.href = "index.html";
     }
     
-    // Load or initialize dummy customers data
     let customers = {};
     if (localStorage.getItem("customers")) {
       customers = JSON.parse(localStorage.getItem("customers"));
@@ -102,7 +96,6 @@
       localStorage.setItem("customers", JSON.stringify(customers));
     }
     
-    // Registration function: Save new customer and redirect to dashboard.html
     function registerCustomer(event) {
       event.preventDefault();
       const name = document.getElementById("customerName").value;
@@ -115,17 +108,15 @@
         id: newId,
         phone,
         address,
-        password, // In production, hash the password
+        password,
         monthQuantity: 0,
         paymentStatus: "Pending"
       };
       localStorage.setItem("customers", JSON.stringify(customers));
       showToast("Registration successful! Redirecting...", "success");
-      // Use location.assign as a fallback
       setTimeout(() => { window.location.assign("index.html"); }, 2000);
     }
     
-    // Toast Notifications
     function showToast(message, type) {
       const toastContainer = document.getElementById("toastContainer");
       const toastEl = document.createElement("div");
