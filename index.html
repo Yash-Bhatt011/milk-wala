@@ -68,7 +68,9 @@
     <div class="row mb-3">
       <div class="col-12 col-md-6">
         <div class="input-group">
-          <span class="input-group-text" id="searchIcon"><i class="fa-solid fa-magnifying-glass"></i></span>
+          <span class="input-group-text" id="searchIcon">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </span>
           <input type="text" class="form-control" placeholder="Search by name or ID" id="searchInput" aria-describedby="searchIcon">
         </div>
       </div>
@@ -103,9 +105,19 @@
         <span>Monthly Summary</span>
       </div>
       <div class="card-body">
-        <div class="mb-3">
-          <label for="monthSelector" class="form-label">Select Month</label>
-          <input type="month" id="monthSelector" class="form-control" onchange="updateMonthlySummary()">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label for="monthSelector" class="form-label">Select Month</label>
+            <input type="month" id="monthSelector" class="form-control" onchange="updateMonthlySummary()">
+          </div>
+          <div class="col-md-6 d-flex align-items-end">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="lastSixMonthsCheckbox" onchange="updateMonthlySummary()">
+              <label class="form-check-label" for="lastSixMonthsCheckbox">
+                Last 6 Months
+              </label>
+            </div>
+          </div>
         </div>
         <table class="table table-bordered">
           <thead>
@@ -195,15 +207,29 @@
       });
     });
     
-    // Monthly Summary Function: Update summary based on selected month (format "YYYY-MM")
+    // Monthly Summary Function
     function updateMonthlySummary() {
-      const selectedMonth = document.getElementById("monthSelector").value;
-      if (!selectedMonth) return;
-      // Filter dailyData whose date starts with selectedMonth
-      const filteredEntries = dailyData.filter(entry => entry.date.substring(0,7) === selectedMonth);
+      const lastSix = document.getElementById("lastSixMonthsCheckbox").checked;
+      let filteredEntries = [];
+      if (lastSix) {
+        // Calculate date 6 months ago
+        const today = new Date();
+        const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1); // from beginning of month 6 months ago
+        // Filter dailyData entries from sixMonthsAgo until today
+        filteredEntries = dailyData.filter(entry => {
+          const entryDate = new Date(entry.date);
+          return entryDate >= sixMonthsAgo && entryDate <= today;
+        });
+      } else {
+        const selectedMonth = document.getElementById("monthSelector").value; // format "YYYY-MM"
+        if (!selectedMonth) return;
+        filteredEntries = dailyData.filter(entry => entry.date.substring(0,7) === selectedMonth);
+      }
+      
       // Count unique customers
       const uniqueCustomers = new Set(filteredEntries.map(entry => entry.customerId));
       const totalCustomers = uniqueCustomers.size;
+      
       // Sum due and received payments
       let duePayments = 0, receivedPayments = 0;
       filteredEntries.forEach(entry => {
