@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Milk Distributor - Customer Details</title>
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- Font Awesome -->
@@ -12,28 +14,70 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     body { 
-      background: #f0f8ff; 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: #f9f9f9; 
+      font-family: 'Roboto', sans-serif; 
       color: #333; 
+      margin-bottom: 40px;
+    }
+    /* Navbar with gradient */
+    .navbar {
+      background: linear-gradient(90deg, #007bff, #00aaff);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .navbar-brand i { margin-right: 8px; }
-    .card { 
-      margin-bottom: 20px; 
-      border: none; 
-      border-radius: 12px; 
-      overflow: hidden; 
-      background: #fff; 
-      transition: transform 0.3s, box-shadow 0.3s; 
+    
+    /* Card styling */
+    .card {
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .card:hover { 
-      transform: translateY(-4px); 
-      box-shadow: 0 8px 16px rgba(0,0,0,0.15); 
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
     .fade-in { animation: fadeIn 0.8s ease-in-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .pointer { cursor: pointer; }
+    .table-responsive { overflow-x: auto; }
+    
+    /* Input group styling */
+    .input-group .form-control { border-right: none; }
+    .input-group-text { background-color: #e9ecef; border-left: none; color: #007bff; }
+    
+    /* Toast container */
     #toastContainer { position: fixed; top: 1rem; right: 1rem; z-index: 1055; }
     @media (max-width: 768px) { #toastContainer { right: 50%; transform: translateX(50%); } }
-    .table-responsive { overflow-x: auto; }
+    
+    /* Dark Mode styles */
+    .dark-mode { background-color: #222; color: #fff; }
+    .dark-mode .table { color: #fff; background-color: #333; }
+    .dark-mode .card { background-color: #333; color: #fff; }
+    
+    /* Loader style */
+    #loader {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+    }
+    
+    .shortcut-hint { font-size: 0.8em; color: #666; }
+    
+    /* Additional spacing for sections */
+    .section-title {
+      margin-bottom: 20px;
+      font-weight: 500;
+      color: #007bff;
+    }
   </style>
 </head>
 <body>
@@ -41,7 +85,7 @@
   <div id="toastContainer"></div>
   
   <!-- Navigation Bar with Back Button -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">
         <i class="fa-solid fa-cow"></i> Milk Distributor
@@ -54,9 +98,9 @@
   
   <!-- Main Content -->
   <div class="container my-4">
-    <h1 class="text-center mb-4">Customer Details</h1>
+    <h1 class="text-center section-title">Customer Details</h1>
     
-    <!-- Customer Information Card with Edit & Delete -->
+    <!-- Customer Information Card -->
     <div id="customerInfo" class="card fade-in mb-4" style="display: none;">
       <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
         <span>Customer Information</span>
@@ -70,19 +114,16 @@
         </div>
       </div>
       <div class="card-body">
-        <p>
-          <strong>Name:</strong> 
+        <p><strong>Name:</strong> 
           <span id="detailNameText"></span>
           <input type="text" id="detailNameInput" class="form-control" style="display: none;">
         </p>
         <p><strong>Customer ID:</strong> <span id="detailID"></span></p>
-        <p>
-          <strong>Phone No:</strong> 
+        <p><strong>Phone No:</strong> 
           <span id="detailPhoneText"></span>
           <input type="text" id="detailPhoneInput" class="form-control" style="display: none;">
         </p>
-        <p>
-          <strong>Address:</strong> 
+        <p><strong>Address:</strong> 
           <span id="detailAddressText"></span>
           <input type="text" id="detailAddressInput" class="form-control" style="display: none;">
         </p>
@@ -149,7 +190,7 @@
         </div>
         <div class="card-body">
           <div class="table-responsive">
-            <table class="table table-bordered" id="dataTable">
+            <table class="table table-bordered text-center" id="dataTable">
               <thead class="table-light">
                 <tr>
                   <th data-label="#">#</th>
@@ -165,7 +206,6 @@
               </tbody>
             </table>
           </div>
-          <!-- Show More / Show Less Button -->
           <div id="showMoreContainer" class="mt-3"></div>
         </div>
       </div>
@@ -202,7 +242,9 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header bg-warning text-white">
-          <h5 class="modal-title" id="editDailyDataModalLabel"><i class="fa-solid fa-pen-to-square"></i> Edit Daily Data</h5>
+          <h5 class="modal-title" id="editDailyDataModalLabel">
+            <i class="fa-solid fa-pen-to-square"></i> Edit Daily Data
+          </h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -226,7 +268,7 @@
               <label for="editPrice" class="form-label">Price (in ₹)</label>
               <input type="number" readonly class="form-control" id="editPrice" required>
             </div>
-            <button type="submit" class="btn btn-primary w-100">
+            <button type="submit" id="saveEditBtn" class="btn btn-primary w-100">
               <i class="fa-solid fa-save"></i> Save Changes
             </button>
           </form>
@@ -239,16 +281,18 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
   <script>
-    // Global variable for toggling "Show More" state
+    /* ---------------------------
+       Data Initialization & Rendering
+    --------------------------- */
+    
     let showAllDailyData = false;
     
-    // Helper: Get query parameter value from URL
     function getQueryParam(param) {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(param);
     }
     
-    // Load or initialize customers from localStorage
+    // Initialize customers from localStorage or dummy data
     let customers = {};
     if (localStorage.getItem("customers")) {
       customers = JSON.parse(localStorage.getItem("customers"));
@@ -261,7 +305,7 @@
       localStorage.setItem("customers", JSON.stringify(customers));
     }
     
-    // Load or initialize dailyData from localStorage
+    // Initialize dailyData from localStorage or dummy data
     let dailyData = [];
     if (!localStorage.getItem("dailyData")) {
       dailyData = [
@@ -275,7 +319,6 @@
       dailyData = JSON.parse(localStorage.getItem("dailyData"));
     }
     
-    // Render Customer Information Card
     function renderCustomerInfo(customerId) {
       const cust = customers[customerId];
       if (!cust) return;
@@ -286,7 +329,6 @@
       document.getElementById("customerInfo").style.display = "block";
     }
     
-    // Enter Edit Mode for Customer Info
     function enterEditMode() {
       document.getElementById("detailNameText").style.display = "none";
       document.getElementById("detailPhoneText").style.display = "none";
@@ -301,7 +343,6 @@
       document.getElementById("customerInfoEditButtons").style.display = "block";
     }
     
-    // Cancel Edit Mode for Customer Info
     function cancelEditMode() {
       document.getElementById("detailNameInput").style.display = "none";
       document.getElementById("detailPhoneInput").style.display = "none";
@@ -313,7 +354,6 @@
       document.getElementById("customerInfoEditButtons").style.display = "none";
     }
     
-    // Save Edited Customer Info
     function saveCustomerInfo() {
       const newName = document.getElementById("detailNameInput").value;
       const newPhone = document.getElementById("detailPhoneInput").value;
@@ -329,7 +369,6 @@
       cancelEditMode();
     }
     
-    // Delete Customer
     function deleteCustomer() {
       if (confirm("Are you sure you want to delete this customer? This action cannot be undone.")) {
         delete customers[currentCustomerId];
@@ -341,7 +380,6 @@
       }
     }
     
-    // Initialize "Add Data Today" Form
     function initializeAddDataForm() {
       const today = new Date().toISOString().split("T")[0];
       document.getElementById("todayDate").value = today;
@@ -349,7 +387,6 @@
       document.getElementById("addDataTodaySection").style.display = "block";
     }
     
-    // Update Price in Add Data Today Form
     function updatePrice() {
       const qty = parseFloat(document.getElementById("todayQuantity").value) || 0;
       const milkType = document.getElementById("milkType").value;
@@ -359,7 +396,6 @@
     document.getElementById("todayQuantity").addEventListener("input", updatePrice);
     document.getElementById("milkType").addEventListener("change", updatePrice);
     
-    // Save "Add Data Today" Data
     function saveTodayData(event) {
       event.preventDefault();
       if (!currentCustomerId) {
@@ -380,7 +416,6 @@
       renderSummaryTable();
     }
     
-    // Render Daily Data Table with "Show More/Less" and Edit Option (without "Day" column)
     function renderDailyDataTable(filteredData = null) {
       let fullData = filteredData;
       if (!fullData) {
@@ -404,7 +439,7 @@
           <td data-label="Quantity">${entry.quantity}L</td>
           <td data-label="Price (in ₹)">₹${entry.price}</td>
           <td data-label="Edit">
-            <button class="btn btn-sm btn-light" onclick="openDailyDataEditModal(${index}, event)">
+            <button class="btn btn-sm btn-info" onclick="openDailyDataEditModal(${index}, event)">
               <i class="fa-solid fa-pen-to-square"></i> Edit
             </button>
           </td>
@@ -428,7 +463,7 @@
       renderDailyDataTable();
     }
     
-    // Render Summary Table
+    // Updated renderSummaryTable() with rounded AVG Price
     function renderSummaryTable() {
       const summary = { totalDays: 0, totalQuantity: 0, totalPayment: 0 };
       dailyData.filter(entry => entry.customerId == currentCustomerId)
@@ -442,13 +477,12 @@
         <tr>
           <td data-label="Total Days">${summary.totalDays}</td>
           <td data-label="Total Quantity">${summary.totalQuantity}L</td>
-          <td data-label="AVG Price (in ₹)">₹${summary.totalQuantity > 0 ? (summary.totalPayment / summary.totalQuantity).toFixed(2) : 0}</td>
+          <td data-label="AVG Price (in ₹)">₹${summary.totalQuantity > 0 ? Math.round(summary.totalPayment / summary.totalQuantity) : 0}</td>
           <td data-label="Total Payment (in ₹)">₹${summary.totalPayment}</td>
         </tr>
       `;
     }
     
-    // New: Filter Daily Data by Date Range (Start Date & End Date)
     function filterDataByRange() {
       const startDate = document.getElementById("startDate").value;
       const endDate = document.getElementById("endDate").value;
@@ -470,15 +504,16 @@
       renderSummaryTable();
     }
     
-    // Back button function
     function goBack() {
       window.location.href = "index.html";
     }
     
-    // Global: current customer id from query parameter
     let currentCustomerId = getQueryParam("customerId");
+    if (!currentCustomerId) {
+      showToast("No customer selected. Redirecting to dashboard.", "warning");
+      setTimeout(() => { window.location.href = "index.html"; }, 2000);
+    }
     
-    // Initialize the page
     function initialize() {
       if (currentCustomerId) {
         renderCustomerInfo(currentCustomerId);
@@ -486,32 +521,10 @@
         renderDailyDataTable();
         renderSummaryTable();
         document.getElementById("customerDataSection").style.display = "block";
-      } else {
-        showToast("No customer selected.", "danger");
       }
     }
     document.addEventListener("DOMContentLoaded", initialize);
     
-    // Toast Notifications
-    function showToast(message, type) {
-      const toastContainer = document.getElementById("toastContainer");
-      const toastEl = document.createElement("div");
-      toastEl.className = `toast align-items-center text-bg-${type} border-0`;
-      toastEl.setAttribute("role", "alert");
-      toastEl.setAttribute("aria-live", "assertive");
-      toastEl.setAttribute("aria-atomic", "true");
-      toastEl.innerHTML = `<div class="d-flex">
-                              <div class="toast-body">${message}</div>
-                              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                           </div>`;
-      toastContainer.appendChild(toastEl);
-      const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-      toast.show();
-      toastEl.addEventListener("hidden.bs.toast", () => { toastEl.remove(); });
-    }
-    
-    // Daily Data Edit Modal functions
-    let currentDailyDataIndex = null;
     function openDailyDataEditModal(index, event) {
       event.stopPropagation();
       currentDailyDataIndex = index;
@@ -534,6 +547,20 @@
     document.getElementById("editQuantity").addEventListener("input", updateEditPrice);
     document.getElementById("editMilkType").addEventListener("change", updateEditPrice);
     
+    document.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('editDailyDataModal');
+      if (modal.classList.contains('show')) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          document.getElementById('saveEditBtn').click();
+        }
+        if (e.key === 'Escape') {
+          const modalInstance = bootstrap.Modal.getInstance(modal);
+          modalInstance.hide();
+        }
+      }
+    });
+    
     function saveDailyDataEdit(event) {
       event.preventDefault();
       const newDate = document.getElementById("editDate").value;
@@ -555,6 +582,100 @@
       modal.hide();
     }
     
+    let currentDailyDataIndex = null;
+    let lastEditedData = null;
+    function saveDailyDataEditWrapper(event) {
+      lastEditedData = { ...dailyData[currentDailyDataIndex] };
+      saveDailyDataEdit(event);
+      showToast(
+        `Changes saved. <button class="btn btn-link p-0 ms-2" onclick="undoLastEdit()">Undo</button>`,
+        "success"
+      );
+    }
+    
+    function undoLastEdit() {
+      if (lastEditedData && currentDailyDataIndex !== null) {
+        dailyData[currentDailyDataIndex] = lastEditedData;
+        localStorage.setItem("dailyData", JSON.stringify(dailyData));
+        renderDailyDataTable();
+        renderSummaryTable();
+        showToast("Changes undone", "info");
+        lastEditedData = null;
+      }
+    }
+    
+    function showToast(message, type) {
+      const toastContainer = document.getElementById("toastContainer");
+      const toastEl = document.createElement("div");
+      toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+      toastEl.setAttribute("role", "alert");
+      toastEl.setAttribute("aria-live", "assertive");
+      toastEl.setAttribute("aria-atomic", "true");
+      toastEl.innerHTML = `<div class="d-flex">
+                              <div class="toast-body">${message}</div>
+                              <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                           </div>`;
+      toastContainer.appendChild(toastEl);
+      const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+      toast.show();
+      toastEl.addEventListener("hidden.bs.toast", () => { toastEl.remove(); });
+    }
+    
+    function initializeDashboard() {
+      renderDailyDataTable();
+      renderSummaryTable();
+    }
+    document.addEventListener("DOMContentLoaded", initializeDashboard);
+  </script>
+  
+  <!-- Extra Features: Dark Mode, Keyboard Shortcuts, Loading Indicator -->
+  <script>
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDarkMode = document.body.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', isDarkMode);
+      showToast(`${isDarkMode ? 'Dark' : 'Light'} mode enabled`, 'info');
+      const toggleBtn = document.getElementById('darkModeBtn');
+      if (isDarkMode) {
+        toggleBtn.classList.remove('btn-outline-dark');
+        toggleBtn.classList.add('btn-light');
+      } else {
+        toggleBtn.classList.remove('btn-light');
+        toggleBtn.classList.add('btn-outline-dark');
+      }
+    }
+    
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      const toggleBtn = document.getElementById('darkModeBtn');
+      if(toggleBtn){
+        toggleBtn.classList.remove('btn-outline-dark');
+        toggleBtn.classList.add('btn-light');
+      }
+    }
+    
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        toggleDarkMode();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+      }
+    });
+    
+    function showLoading() {
+      const loader = document.createElement('div');
+      loader.id = 'loader';
+      loader.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+      document.body.appendChild(loader);
+    }
+    
+    function hideLoading() {
+      const loader = document.getElementById('loader');
+      if (loader) loader.remove();
+    }
   </script>
   
 </body>

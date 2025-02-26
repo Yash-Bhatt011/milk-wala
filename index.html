@@ -42,10 +42,23 @@
     @media (max-width: 768px) { #toastContainer { right: 50%; transform: translateX(50%); } }
     #customersTable th, #customersTable td { text-align: center; }
     .table-responsive { overflow-x: auto; }
+    /* Dark Mode styles */
+    .dark-mode { background-color: #222; color: #fff; }
+    .dark-mode .table { color: #fff; background-color: #333; }
+    .dark-mode .card { background-color: #333; color: #fff; }
+    /* Loader style */
+    #loader {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+    }
+    .shortcut-hint { font-size: 0.8em; color: #666; }
   </style>
 </head>
 <body>
-  <!-- Toast Container -->
+  <!-- Toast Notifications -->
   <div id="toastContainer"></div>
   
   <!-- Navigation Bar with "Register" Link -->
@@ -64,31 +77,28 @@
   <div class="container my-4">
     <h1 class="text-center mb-4">All Customers</h1>
     
-    <!-- Search Filter -->
-    <div class="row mb-3">
-      <div class="col-12 col-md-6">
-        <div class="input-group">
-          <span class="input-group-text" id="searchIcon">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </span>
-          <input type="text" class="form-control" placeholder="Search by name or ID" id="searchInput" aria-describedby="searchIcon">
-        </div>
-      </div>
+    <!-- Search Input & Extra Buttons -->
+    <div class="mb-3">
+      <input type="text" id="searchInput" class="form-control" placeholder="Search by Name or ID..." onkeyup="searchCustomers()">
+    </div>
+    <div class="mb-3">
+      <button class="btn btn-outline-dark" id="darkModeBtn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+      <span class="shortcut-hint">[Ctrl/Cmd + D for dark mode, Ctrl/Cmd + F for search]</span>
     </div>
     
     <!-- Customers Table -->
     <div class="card fade-in mb-4">
       <div class="card-body">
-        <div class="table-responsive">
+        <div class="table-responsive" id="printableArea">
           <table class="table table-hover" id="customersTable">
             <thead class="table-light">
               <tr>
-                <th data-label="#">#</th>
-                <th data-label="Customer ID">Customer ID</th>
-                <th data-label="Name">Name</th>
-                <th data-label="Phone No">Phone No</th>
-                <th data-label="Address">Address</th>
-                <th data-label="Quantity (This Month)">Quantity (This Month)</th>
+                <th data-label="#" onclick="sortTable(0)" style="cursor:pointer;">#</th>
+                <th data-label="Customer ID" onclick="sortTable(1)" style="cursor:pointer;">Customer ID</th>
+                <th data-label="Name" onclick="sortTable(2)" style="cursor:pointer;">Name</th>
+                <th data-label="Phone No" onclick="sortTable(3)" style="cursor:pointer;">Phone No</th>
+                <th data-label="Address" onclick="sortTable(4)" style="cursor:pointer;">Address</th>
+                <th data-label="Quantity (This Month)" onclick="sortTable(5)" style="cursor:pointer;">Quantity (This Month)</th>
               </tr>
             </thead>
             <tbody id="customersTableBody">
@@ -142,21 +152,29 @@
   
   <!-- Bootstrap Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
   <script>
-    // Load or initialize customers from localStorage
+    // ---------------------------
+    // Data Initialization & Rendering
+    // ---------------------------
+    
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+    
     let customers = {};
     if (localStorage.getItem("customers")) {
       customers = JSON.parse(localStorage.getItem("customers"));
     } else {
       customers = {
-        1: { name: "John Doe", id: 1, phone: "1234567890", address: "123 Milk St", monthQuantity: 50, paymentStatus: "Pending" },
-        2: { name: "Jane Smith", id: 2, phone: "0987654321", address: "456 Dairy Ave", monthQuantity: 30, paymentStatus: "Pending" },
-        3: { name: "Bob Johnson", id: 3, phone: "5551234567", address: "789 Cream Rd", monthQuantity: 40, paymentStatus: "Pending" }
+        1: { name: "John Doe", id: 1, phone: "1234567890", address: "123 Milk St", monthQuantity: 0, paymentStatus: "Pending" },
+        2: { name: "Jane Smith", id: 2, phone: "0987654321", address: "456 Dairy Ave", monthQuantity: 0, paymentStatus: "Pending" },
+        3: { name: "Bob Johnson", id: 3, phone: "5551234567", address: "789 Cream Rd", monthQuantity: 0, paymentStatus: "Pending" }
       };
       localStorage.setItem("customers", JSON.stringify(customers));
     }
     
-    // Load or initialize dailyData from localStorage (with paymentStatus)
     let dailyData = [];
     if (!localStorage.getItem("dailyData")) {
       dailyData = [
@@ -170,7 +188,40 @@
       dailyData = JSON.parse(localStorage.getItem("dailyData"));
     }
     
+    // ---------------------------
+    // Update Monthly Quantities
+    // ---------------------------
+    
+    function updateMonthlyQuantities() {
+      // Reset monthly quantity for each customer
+      for (let id in customers) {
+        customers[id].monthQuantity = 0;
+      }
+      
+      // Get the current month in "YYYY-MM" format
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth() + 1;
+      const formattedMonth = `${year}-${month < 10 ? '0' + month : month}`;
+      
+      // Sum up daily quantities for entries in the current month
+      dailyData.forEach(entry => {
+        if (entry.date.substring(0, 7) === formattedMonth) {
+          const quantity = parseFloat(entry.quantity) || 0;
+          if (customers[entry.customerId]) {
+            customers[entry.customerId].monthQuantity += quantity;
+          }
+        }
+      });
+      
+      // Update localStorage with the new customers data
+      localStorage.setItem("customers", JSON.stringify(customers));
+    }
+    
+    // ---------------------------
     // Render Customers Table
+    // ---------------------------
+    
     function renderCustomersTable() {
       const tbody = document.getElementById("customersTableBody");
       tbody.innerHTML = "";
@@ -196,41 +247,58 @@
       window.location.href = "customerDetails.html?customerId=" + customerId;
     }
     
-    // Search Filter: search by Customer ID and Name
-    document.getElementById("searchInput").addEventListener("keyup", function() {
-      const filter = this.value.toLowerCase();
-      const rows = document.querySelectorAll("#customersTable tbody tr");
-      rows.forEach(row => {
-        const custId = row.cells[1].textContent.toLowerCase();
-        const name = row.cells[2].textContent.toLowerCase();
-        row.style.display = (custId.includes(filter) || name.includes(filter)) ? "" : "none";
-      });
-    });
+    // ---------------------------
+    // Custom Search Function
+    // ---------------------------
     
-    // Monthly Summary Function
+    // This function searches only the Customer ID (cell index 1) and Name (cell index 2).
+    function searchCustomers() {
+      const searchTerm = document.getElementById("searchInput").value.trim().toLowerCase();
+      const rows = document.querySelectorAll("#customersTableBody tr");
+      rows.forEach(row => {
+        const cells = row.getElementsByTagName("td");
+        let combinedText = "";
+        if (cells.length >= 3) {
+          combinedText = cells[1].textContent.toLowerCase() + " " +
+                         cells[2].textContent.toLowerCase();
+        }
+        row.style.display = combinedText.includes(searchTerm) ? "" : "none";
+      });
+    }
+    
+    function sortTable(columnIndex) {
+      const table = document.getElementById("customersTable");
+      const tbody = table.getElementsByTagName("tbody")[0];
+      const rows = Array.from(tbody.getElementsByTagName("tr"));
+      rows.sort((a, b) => {
+        const aVal = a.getElementsByTagName("td")[columnIndex].textContent;
+        const bVal = b.getElementsByTagName("td")[columnIndex].textContent;
+        return aVal.localeCompare(bVal);
+      });
+      rows.forEach(row => tbody.appendChild(row));
+    }
+    
+    // ---------------------------
+    // Monthly Summary Section
+    // ---------------------------
+    
     function updateMonthlySummary() {
       const lastSix = document.getElementById("lastSixMonthsCheckbox").checked;
       let filteredEntries = [];
       if (lastSix) {
-        // Calculate date 6 months ago
         const today = new Date();
-        const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1); // from beginning of month 6 months ago
-        // Filter dailyData entries from sixMonthsAgo until today
+        const sixMonthsAgo = new Date(today.getFullYear(), today.getMonth() - 5, 1);
         filteredEntries = dailyData.filter(entry => {
           const entryDate = new Date(entry.date);
           return entryDate >= sixMonthsAgo && entryDate <= today;
         });
       } else {
-        const selectedMonth = document.getElementById("monthSelector").value; // format "YYYY-MM"
+        const selectedMonth = document.getElementById("monthSelector").value;
         if (!selectedMonth) return;
         filteredEntries = dailyData.filter(entry => entry.date.substring(0,7) === selectedMonth);
       }
-      
-      // Count unique customers
       const uniqueCustomers = new Set(filteredEntries.map(entry => entry.customerId));
       const totalCustomers = uniqueCustomers.size;
-      
-      // Sum due and received payments
       let duePayments = 0, receivedPayments = 0;
       filteredEntries.forEach(entry => {
         const amount = parseFloat(entry.price) || 0;
@@ -243,9 +311,22 @@
       document.getElementById("totalCustomersSummary").innerText = totalCustomers;
       document.getElementById("duePaymentsSummary").innerText = duePayments;
       document.getElementById("receivedPaymentsSummary").innerText = receivedPayments;
+      
+      // Update print summary table if present
+      const totalPrint = document.getElementById("totalCustomersSummaryPrint");
+      const duePrint = document.getElementById("duePaymentsSummaryPrint");
+      const receivedPrint = document.getElementById("receivedPaymentsSummaryPrint");
+      if (totalPrint && duePrint && receivedPrint) {
+        totalPrint.innerText = totalCustomers;
+        duePrint.innerText = duePayments;
+        receivedPrint.innerText = receivedPayments;
+      }
     }
     
-    // Set default month in monthSelector to current month and update summary on load
+    // ---------------------------
+    // Initialization
+    // ---------------------------
+    
     document.addEventListener("DOMContentLoaded", () => {
       const monthInput = document.getElementById("monthSelector");
       const today = new Date();
@@ -253,11 +334,17 @@
       const year = today.getFullYear();
       const formattedMonth = (month < 10 ? "0" : "") + month;
       monthInput.value = `${year}-${formattedMonth}`;
+      
+      // Update monthly quantities from dailyData before rendering
+      updateMonthlyQuantities();
       updateMonthlySummary();
       renderCustomersTable();
     });
     
+    // ---------------------------
     // Toast Notifications
+    // ---------------------------
+    
     function showToast(message, type) {
       const toastContainer = document.getElementById("toastContainer");
       const toastEl = document.createElement("div");
@@ -275,11 +362,71 @@
       toastEl.addEventListener("hidden.bs.toast", () => { toastEl.remove(); });
     }
     
+    // ---------------------------
     // Dashboard Initialization
-    function initialize() {
+    // ---------------------------
+    
+    function initializeDashboard() {
       renderCustomersTable();
     }
-    document.addEventListener("DOMContentLoaded", initialize);
+    document.addEventListener("DOMContentLoaded", initializeDashboard);
   </script>
+  
+  <!-- ---------------------------
+       Extra Features: Dark Mode, Keyboard Shortcuts, Loading Indicator
+  --------------------------- -->
+  <script>
+    // Dark Mode Toggle: Button becomes white when dark mode is active.
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDarkMode = document.body.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', isDarkMode);
+      showToast(`${isDarkMode ? 'Dark' : 'Light'} mode enabled`, 'info');
+      const toggleBtn = document.getElementById('darkModeBtn');
+      if (isDarkMode) {
+        toggleBtn.classList.remove('btn-outline-dark');
+        toggleBtn.classList.add('btn-light');
+      } else {
+        toggleBtn.classList.remove('btn-light');
+        toggleBtn.classList.add('btn-outline-dark');
+      }
+    }
+    
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      const toggleBtn = document.getElementById('darkModeBtn');
+      if(toggleBtn){
+        toggleBtn.classList.remove('btn-outline-dark');
+        toggleBtn.classList.add('btn-light');
+      }
+    }
+    
+    document.addEventListener('keydown', (e) => {
+      // Ctrl/Cmd + D toggles dark mode
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        toggleDarkMode();
+      }
+      // Ctrl/Cmd + F focuses search input
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+      }
+    });
+    
+    function showLoading() {
+      const loader = document.createElement('div');
+      loader.id = 'loader';
+      loader.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+      document.body.appendChild(loader);
+    }
+    
+    function hideLoading() {
+      const loader = document.getElementById('loader');
+      if (loader) loader.remove();
+    }
+  </script>
+  
 </body>
 </html>
+
